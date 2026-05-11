@@ -173,16 +173,22 @@ export default function OnboardingPage() {
       console.log('User created with ID:', data.user.id);
 
       // Save onboarding answers to database
-      // TODO: Create 'onboarding_answers' table in Supabase with columns: user_id, answers, created_at
+      // Table structure: question_key, answer_value (individual Q&A pairs)
       try {
         console.log('Attempting to save onboarding answers for user:', data.user.id);
+        
+        // Convert answers object to array of question-answer pairs
+        const answerRows = Object.entries(answers).map(([questionKey, answerValue]) => ({
+          user_id: data.user.id,
+          question_key: questionKey,
+          answer_value: answerValue
+        }));
+
+        console.log('Inserting answer rows:', answerRows);
+
         const { error: insertError, data: insertData } = await supabase
           .from('onboarding_answers' as any)
-          .insert({
-            user_id: data.user.id,
-            answers: answers,
-            created_at: new Date().toISOString()
-          })
+          .insert(answerRows)
           .select();
 
         if (insertError) {
