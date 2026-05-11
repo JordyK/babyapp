@@ -1,0 +1,39 @@
+{
+  "name": "baby-planning-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "baby",
+    "planning",
+    "checklist",
+    "parenting",
+    "pregnancy"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "A modern baby planning platform that helps expecting parents create personalized baby essentials checklists.",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "@types/node": "^25.6.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.0",
+    "clsx": "^2.1.1",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "next": "^16.2.6",
+    "postcss": "^8.5.14",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3"
+  }
+}
