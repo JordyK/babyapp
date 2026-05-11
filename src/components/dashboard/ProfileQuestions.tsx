@@ -43,52 +43,77 @@ export function ProfileQuestions({ profile }: ProfileQuestionsProps) {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
   return (
-    <div>
-      {/* Section header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Improve Your Recommendations
-          </h2>
-          <span className="text-sm font-medium text-primary-600">
-            {completionPercent}%
-          </span>
+    <Card className="p-0 overflow-hidden">
+      {/* Collapsible header */}
+      <button
+        type="button"
+        onClick={() => setExpandedGroup(expandedGroup ? null : '__open__')}
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-neutral-50/50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-accent-50 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm text-neutral-800">Improve Your Recommendations</p>
+            <p className="text-xs text-neutral-400">
+              {completionPercent > 0
+                ? `${completionPercent}% complete — keep going at your own pace`
+                : 'Optional questions to personalize your experience'}
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-neutral-400 mb-3">
-          Help us personalize your experience. Answer at your own pace — everything is optional.
-        </p>
-        {/* Progress bar */}
-        <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary-500 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${completionPercent}%` }}
-          />
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <span className="text-xs font-medium text-primary-600">{completionPercent}%</span>
+          <svg
+            className={cn('w-5 h-5 text-neutral-300 transition-transform duration-200', expandedGroup && 'rotate-180')}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
-      </div>
+      </button>
 
-      {/* Question groups */}
-      <div className="space-y-3">
-        {QUESTION_GROUPS.map((group) => {
-          const groupAnswered = getGroupAnsweredCount(profile, group);
-          const groupTotal = group.questions.length;
-          const isComplete = groupAnswered === groupTotal;
-          const isExpanded = expandedGroup === group.id;
-
-          return (
-            <QuestionGroupCard
-              key={group.id}
-              group={group}
-              profile={profile}
-              isExpanded={isExpanded}
-              isComplete={isComplete}
-              answeredCount={groupAnswered}
-              totalCount={groupTotal}
-              onToggle={() => setExpandedGroup(isExpanded ? null : group.id)}
+      {/* Expanded content */}
+      {expandedGroup && (
+        <div className="px-5 pb-5 border-t border-neutral-100 pt-4">
+          {/* Progress bar */}
+          <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden mb-4">
+            <div
+              className="h-full bg-primary-500 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${completionPercent}%` }}
             />
-          );
-        })}
-      </div>
-    </div>
+          </div>
+
+          {/* Question groups */}
+          <div className="space-y-3">
+            {QUESTION_GROUPS.map((group) => {
+              const groupAnswered = getGroupAnsweredCount(profile, group);
+              const groupTotal = group.questions.length;
+              const isComplete = groupAnswered === groupTotal;
+              const isGroupExpanded = expandedGroup === group.id;
+
+              return (
+                <QuestionGroupCard
+                  key={group.id}
+                  group={group}
+                  profile={profile}
+                  isExpanded={isGroupExpanded}
+                  isComplete={isComplete}
+                  answeredCount={groupAnswered}
+                  totalCount={groupTotal}
+                  onToggle={() => setExpandedGroup(isGroupExpanded ? '__open__' : group.id)}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -112,12 +137,12 @@ function QuestionGroupCard({
   onToggle,
 }: QuestionGroupCardProps) {
   return (
-    <Card className={cn('p-0 overflow-hidden transition-all duration-200', isExpanded && 'ring-1 ring-primary-200')}>
+    <div className={cn('rounded-xl border transition-all duration-200', isExpanded ? 'border-primary-200 bg-primary-50/20' : 'border-neutral-100')}>
       {/* Group header — always visible */}
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center gap-4 p-5 text-left hover:bg-neutral-50/50 transition-colors"
+        className="w-full flex items-center gap-4 p-4 text-left hover:bg-neutral-50/50 transition-colors rounded-xl"
       >
         <span className="text-xl flex-shrink-0">{group.icon}</span>
         <div className="flex-1 min-w-0">
@@ -159,7 +184,7 @@ function QuestionGroupCard({
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
 

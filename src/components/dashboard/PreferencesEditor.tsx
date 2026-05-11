@@ -182,37 +182,64 @@ interface PreferencesEditorProps {
 }
 
 export function PreferencesEditor({ profile }: PreferencesEditorProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold text-neutral-900">Your Preferences</h2>
-        <p className="text-xs text-neutral-400">Tap any value to edit</p>
-      </div>
+    <Card className="p-0 overflow-hidden">
+      {/* Collapsed header */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-neutral-50/50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-medium text-sm text-neutral-800">Your Preferences</p>
+            <p className="text-xs text-neutral-400">Tap to view or edit your answers</p>
+          </div>
+        </div>
+        <svg
+          className={cn('w-5 h-5 text-neutral-300 transition-transform duration-200', isOpen && 'rotate-180')}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-      <div className="space-y-4">
-        {PREFERENCE_GROUPS.map((group) => (
-          <Card key={group.title} className="p-4">
-            <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3">
-              {group.title}
-            </p>
-            <div className="space-y-3">
-              {group.items.map((item) => (
-                <PreferenceRow
-                  key={item.field}
-                  item={item}
-                  value={(profile as unknown as Record<string, unknown>)[item.field] as string | null}
-                  isEditing={editingField === item.field}
-                  onEdit={() => setEditingField(editingField === item.field ? null : item.field)}
-                  onSaved={() => setEditingField(null)}
-                />
-              ))}
+      {/* Expanded content */}
+      {isOpen && (
+        <div className="px-5 pb-5 border-t border-neutral-100 space-y-4 pt-4">
+          {PREFERENCE_GROUPS.map((group) => (
+            <div key={group.title}>
+              <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">
+                {group.title}
+              </p>
+              <div className="space-y-2">
+                {group.items.map((item) => (
+                  <PreferenceRow
+                    key={item.field}
+                    item={item}
+                    value={(profile as unknown as Record<string, unknown>)[item.field] as string | null}
+                    isEditing={editingField === item.field}
+                    onEdit={() => setEditingField(editingField === item.field ? null : item.field)}
+                    onSaved={() => setEditingField(null)}
+                  />
+                ))}
+              </div>
             </div>
-          </Card>
-        ))}
-      </div>
-    </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 
