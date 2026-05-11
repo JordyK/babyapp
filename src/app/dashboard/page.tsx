@@ -6,6 +6,7 @@ import type { Profile } from '@/lib/types/profile';
 import { SignOutButton } from '@/components/dashboard/SignOutButton';
 import { ProfileSync } from '@/components/dashboard/ProfileSync';
 import { ProfileQuestions } from '@/components/dashboard/ProfileQuestions';
+import { PreferencesEditor } from '@/components/dashboard/PreferencesEditor';
 
 const BUDGET_LABELS: Record<string, string> = {
   low: 'Budget-Friendly',
@@ -49,6 +50,20 @@ export default async function DashboardPage() {
 
   const daysUntilDue = getDaysUntilDue(profile?.due_date ?? null);
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
+
+  // Check if all progressive profiling questions are answered
+  const profilingComplete = profile ? [
+    profile.feeding_preference,
+    profile.travel_frequency,
+    profile.lifestyle_style,
+    profile.nursery_plan,
+    profile.storage_space,
+    profile.support_network,
+    profile.work_situation,
+    profile.parenting_approach,
+    profile.sleeping_preference,
+    profile.shopping_preference,
+  ].every((v) => v !== null && v !== undefined) : false;
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -147,8 +162,12 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Progressive profiling */}
-        {profile && <ProfileQuestions profile={profile} />}
+        {/* Progressive profiling OR preferences editor */}
+        {profile && (
+          profilingComplete
+            ? <PreferencesEditor profile={profile} />
+            : <ProfileQuestions profile={profile} />
+        )}
 
         {/* What's next */}
         <Card className="p-6 bg-white mt-8">
