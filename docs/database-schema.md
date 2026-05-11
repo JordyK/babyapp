@@ -145,6 +145,8 @@ Master catalog of curated baby items with personalization conditions.
 | priority | text | NO | essential, recommended, nice_to_have |
 | conditions | jsonb | YES | Personalization rules, e.g. `{"feeding_preference": ["breastfeeding"]}` |
 | sort_order | int | NO | Ordering within category |
+| explainer | text | YES | 2-3 sentence explanation of why this item is needed |
+| tips | text | YES | Buying tips and what to look for |
 | created_at | timestamptz | NO | Record creation |
 
 **RLS**: Read-only for all authenticated users.
@@ -168,7 +170,40 @@ Per-user checklist state — tracks status of each item for a specific user.
 | created_at | timestamptz | NO | Record creation |
 | updated_at | timestamptz | NO | Last update |
 
-**RLS**: Users can only CRUD their own rows (`user_id = auth.uid()`).
+**RLS**: Users can only CRUD their own rows (`user_id = auth.uid()`). Collaborators also get SELECT/UPDATE/INSERT.
+
+---
+
+## gift_claims
+
+Tracks which items friends/family have claimed as gifts via the public share link.
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| id | uuid | NO | Primary key (auto-generated) |
+| share_token | text | NO | Links to profile.share_token |
+| item_id | uuid | NO | FK → user_checklist(id) |
+| claimer_name | text | NO | Name of person claiming (no account needed) |
+| claimed_at | timestamptz | NO | When the claim was made |
+
+**RLS**: Public SELECT and INSERT (no auth required). Owner can DELETE.
+
+---
+
+## checklist_collaborators
+
+Partner collaboration — invite someone by email to co-manage the checklist.
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| id | uuid | NO | Primary key (auto-generated) |
+| owner_id | uuid | NO | FK → auth.users(id), checklist owner |
+| collaborator_id | uuid | YES | FK → auth.users(id), null until accepted |
+| collaborator_email | text | NO | Email of invited partner |
+| status | text | NO | pending, accepted |
+| created_at | timestamptz | NO | When invite was created |
+
+**RLS**: Owner can manage. Collaborator can see and accept their own invites.
 
 ---
 
@@ -196,3 +231,22 @@ Per-user checklist state — tracks status of each item for a specific user.
 | Users can insert their own items | INSERT | auth.uid() = user_id |
 | Users can update their own items | UPDATE | auth.uid() = user_id |
 | Users can delete their own items | DELETE | auth.uid() = user_id |
+| Collaborators can view shared checklist | SELECT | user_id in accepted collaborations |
+| Collaborators can update shared checklist | UPDATE | user_id in accepted collaborations |
+| Collaborators can add to shared checklist | INSERT | user_id in accepted collaborations |
+
+### gift_claims
+
+| Policy | Operation | Rule |
+|--------|-----------|------|
+| Anyone can read gift claims | SELECT | public |
+| Anyone can claim a gift | INSERT | public |
+| Owner can delete claims | DELETE | share_token matches owner profile |
+
+### checklist_collaborators
+
+| Policy | Operation | Rule |
+|--------|-----------|------|
+| Owner can manage collaborators | ALL | auth.uid() = owner_id |
+| Collaborator can see their invites | SELECT | auth.uid() = collaborator_id |
+| Collaborator can accept invite | UPDATE | auth.uid() = collaborator_id |
