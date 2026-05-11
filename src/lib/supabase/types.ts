@@ -19,8 +19,8 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      // Users table - extends auth.users with additional profile information
-      users: {
+      // Profiles table - extends auth.users with additional profile information
+      profiles: {
         Row: {
           id: string
           email: string

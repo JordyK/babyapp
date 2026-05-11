@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "devCommand": "npm run dev",
+  "ignoreCommand": "echo 'Skipping build step for deployment'",
+  "regions": ["iad1"]
+}

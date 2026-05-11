@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Geist } from 'next/font/google';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { LayoutWrapper } from '@/components/layout';
 import { AuthProvider } from '@/contexts/AuthContext';
 import '@/styles/globals.css';
 import { cn } from "@/lib/utils";
@@ -28,9 +27,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <TooltipProvider>
           <AuthProvider>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
+            {children}
           </AuthProvider>
         </TooltipProvider>
       </body>

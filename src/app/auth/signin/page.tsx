@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ import { Button, Card, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { signInSchema, type SignInFormData } from '@/lib/auth/schemas';
 
-export default function SignInPage() {
+function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, loading } = useAuth();
@@ -157,5 +157,13 @@ export default function SignInPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">Loading...</div>}>
+      <SignInContent />
+    </Suspense>
   );
 }

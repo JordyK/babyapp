@@ -102,21 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Create user profile in database
-      if (data.user && !error) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email: data.user.email!,
-            first_name: options?.firstName || null,
-            last_name: options?.lastName || null,
-          });
-
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-          return { error: 'Account created but profile setup failed. Please contact support.' };
-        }
-      }
+      // Profile is created automatically by database trigger
 
       return { error: null };
     } catch (error) {
@@ -197,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
           first_name: data.firstName,
           last_name: data.lastName,
