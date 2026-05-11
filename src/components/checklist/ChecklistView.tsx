@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Card } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -12,9 +13,10 @@ type FilterMode = 'all' | 'remaining' | 'completed';
 
 interface ChecklistViewProps {
   readonly items: UserChecklistItem[];
+  readonly claimedMap?: Record<string, string>;
 }
 
-export function ChecklistView({ items }: ChecklistViewProps) {
+export function ChecklistView({ items, claimedMap = {} }: ChecklistViewProps) {
   const [filter, setFilter] = useState<FilterMode>('remaining');
 
   // Stats
@@ -106,6 +108,7 @@ export function ChecklistView({ items }: ChecklistViewProps) {
               category={category}
               items={catItems}
               allCategoryItems={items.filter((i) => i.category === category)}
+              claimedMap={claimedMap}
             />
           ))}
         </div>
@@ -121,9 +124,10 @@ interface CategoryGroupProps {
   readonly category: ChecklistCategory;
   readonly items: UserChecklistItem[];
   readonly allCategoryItems: UserChecklistItem[];
+  readonly claimedMap: Record<string, string>;
 }
 
-function CategoryGroup({ category, items, allCategoryItems }: CategoryGroupProps) {
+function CategoryGroup({ category, items, allCategoryItems, claimedMap }: CategoryGroupProps) {
   const doneCount = allCategoryItems.filter((i) => i.status === 'done').length;
   const totalCount = allCategoryItems.length;
 
@@ -136,7 +140,7 @@ function CategoryGroup({ category, items, allCategoryItems }: CategoryGroupProps
       </div>
       <div className="space-y-1.5">
         {items.map((item) => (
-          <ChecklistItemRow key={item.id} item={item} />
+          <ChecklistItemRow key={item.id} item={item} claimedBy={claimedMap[item.id] ?? null} />
         ))}
       </div>
     </div>
@@ -145,9 +149,10 @@ function CategoryGroup({ category, items, allCategoryItems }: CategoryGroupProps
 
 interface ChecklistItemRowProps {
   readonly item: UserChecklistItem;
+  readonly claimedBy: string | null;
 }
 
-function ChecklistItemRow({ item }: ChecklistItemRowProps) {
+function ChecklistItemRow({ item, claimedBy }: ChecklistItemRowProps) {
   const router = useRouter();
   const [status, setStatus] = useState<ChecklistStatus>(item.status);
   const [saving, setSaving] = useState(false);
@@ -212,10 +217,11 @@ function ChecklistItemRow({ item }: ChecklistItemRowProps) {
         )}
       </button>
 
-      {/* Name */}
-      <span
+      {/* Name — links to detail page */}
+      <Link
+        href={`/dashboard/checklist/${item.id}`}
         className={cn(
-          'flex-1 text-sm',
+          'flex-1 text-sm hover:underline',
           status === 'done' && 'line-through text-neutral-400',
           status === 'skipped' && 'line-through text-neutral-400',
           status === 'pending' && 'text-neutral-700'
@@ -227,7 +233,14 @@ function ChecklistItemRow({ item }: ChecklistItemRowProps) {
             Custom
           </span>
         )}
-      </span>
+      </Link>
+
+      {/* Claimed badge */}
+      {claimedBy && (
+        <span className="text-[10px] font-medium text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full flex-shrink-0">
+          🎁 {claimedBy}
+        </span>
+      )}
 
       {/* Skip button */}
       <button

@@ -20,6 +20,27 @@ export interface ChecklistItem {
   priority: ChecklistPriority;
   conditions: Record<string, string[]>;
   sort_order: number;
+  explainer: string;
+  tips: string;
+}
+
+export interface GiftClaim {
+  id: string;
+  share_token: string;
+  item_id: string;
+  claimer_name: string;
+  claimed_at: string;
+}
+
+export type CollaboratorStatus = 'pending' | 'accepted';
+
+export interface ChecklistCollaborator {
+  id: string;
+  owner_id: string;
+  collaborator_id: string | null;
+  collaborator_email: string;
+  status: CollaboratorStatus;
+  created_at: string;
 }
 
 export interface UserChecklistItem {
