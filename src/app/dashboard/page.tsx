@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, Button } from '@/components/ui';
 import { DashboardLayout } from '@/components/dashboard';
@@ -8,6 +8,43 @@ import { Container } from '@/components/layout';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    // Check if there are pending onboarding answers to save after email verification
+    const savePendingOnboarding = async () => {
+      if (!user) return;
+
+      const pendingAnswers = localStorage.getItem('onboarding-answers');
+      if (!pendingAnswers) return;
+
+      try {
+        const answers = JSON.parse(pendingAnswers);
+        
+        const response = await fetch('/api/onboarding/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            answers: answers
+          })
+        });
+
+        if (response.ok) {
+          console.log('Onboarding answers saved successfully after verification');
+          localStorage.removeItem('onboarding-answers');
+          localStorage.removeItem('pending-user-id');
+        } else {
+          console.error('Failed to save onboarding answers after verification');
+        }
+      } catch (error) {
+        console.error('Error saving pending onboarding answers:', error);
+      }
+    };
+
+    savePendingOnboarding();
+  }, [user]);
 
   if (loading) {
     return (

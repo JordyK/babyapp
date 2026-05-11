@@ -14,13 +14,13 @@ export default function OnboardingPage() {
   // Sample onboarding configuration for baby planning
   const onboardingConfig: OnboardingConfig = {
     id: 'baby-planning-onboarding',
-    title: "Let's create your personalized baby plan",
-    description: "Just a few quick questions to help you figure out exactly what you need",
+    title: "Welcome to your baby planning journey",
+    description: "Let's create a personalized plan that fits your unique situation",
     steps: [
       {
-        id: 'quick-start',
-        title: 'Quick questions',
-        description: 'This takes less than 2 minutes',
+        id: 'personalization',
+        title: 'Tell us about you',
+        description: 'This helps us tailor everything to your needs',
         questions: [
           {
             id: 'first-child',
@@ -33,15 +33,11 @@ export default function OnboardingPage() {
             ]
           },
           {
-            id: 'due-month',
-            type: 'radio',
-            title: "When are you due?",
-            required: true,
-            options: [
-              { value: 'first-trimester', label: "First trimester", description: "Months 1-3" },
-              { value: 'second-trimester', label: "Second trimester", description: "Months 4-6" },
-              { value: 'third-trimester', label: "Third trimester", description: "Months 7-9" }
-            ]
+            id: 'due-date',
+            type: 'date',
+            title: "When is your due date?",
+            description: "We'll time everything perfectly for your arrival",
+            required: true
           },
           {
             id: 'budget',
@@ -53,14 +49,7 @@ export default function OnboardingPage() {
               { value: 'mid-range', label: "Mid-range", description: "Balance quality and cost" },
               { value: 'premium', label: "Premium", description: "Quality over cost" }
             ]
-          }
-        ]
-      },
-      {
-        id: 'preferences',
-        title: 'Your style',
-        description: 'Help us tailor recommendations',
-        questions: [
+          },
           {
             id: 'second-hand',
             type: 'radio',
@@ -71,16 +60,24 @@ export default function OnboardingPage() {
               { value: 'some', label: "For some items", description: "Certain things only" },
               { value: 'no', label: "Prefer new", description: "Everything new" }
             ]
-          },
+          }
+        ]
+      },
+      {
+        id: 'account',
+        title: 'Create your account',
+        description: 'Save your plan and access it anytime',
+        questions: [
           {
-            id: 'living-space',
-            type: 'radio',
-            title: "What's your living situation?",
+            id: 'full-name',
+            type: 'text',
+            title: "What's your full name?",
+            description: "We'll personalize your experience",
             required: true,
-            options: [
-              { value: 'apartment', label: "Apartment", description: "Smaller space" },
-              { value: 'house', label: "House", description: "More space available" }
-            ]
+            validation: [
+              { type: 'required', message: 'Please enter your name' }
+            ],
+            placeholder: 'Your full name'
           },
           {
             id: 'email',
@@ -131,6 +128,7 @@ export default function OnboardingPage() {
     try {
       const email = answers.email;
       const password = answers.password;
+      const fullName = answers['full-name'];
       
       if (!email) {
         throw new Error('Email is required');
@@ -140,7 +138,7 @@ export default function OnboardingPage() {
         throw new Error('Password is required');
       }
 
-      // Save onboarding answers to localStorage
+      // Save onboarding answers to localStorage (will be saved to DB after email verification)
       localStorage.setItem('onboarding-answers', JSON.stringify(answers));
 
       // Create Supabase client
@@ -153,6 +151,11 @@ export default function OnboardingPage() {
         email,
         password,
         options: {
+          data: {
+            full_name: fullName,
+            first_name: fullName?.split(' ')[0],
+            last_name: fullName?.split(' ').slice(1).join(' '),
+          },
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
@@ -172,35 +175,8 @@ export default function OnboardingPage() {
 
       console.log('User created with ID:', data.user.id);
 
-      // Save onboarding answers to database using server endpoint
-      // Server uses admin client (service role key) to bypass RLS
-      try {
-        console.log('Calling server endpoint to save onboarding answers for user:', data.user.id);
-        
-        const response = await fetch('/api/onboarding/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: data.user.id,
-            answers: answers
-          })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          console.error('Server failed to save onboarding answers:', result);
-          // Fallback to localStorage if server save fails
-          localStorage.setItem(`onboarding_answers_${data.user.id}`, JSON.stringify(answers));
-        } else {
-          console.log('Server successfully saved onboarding answers:', result);
-        }
-      } catch (serverError) {
-        console.error('Server error, using localStorage fallback:', serverError);
-        localStorage.setItem(`onboarding_answers_${data.user.id}`, JSON.stringify(answers));
-      }
+      // Save user ID to localStorage for post-verification processing
+      localStorage.setItem('pending-user-id', data.user.id);
 
       setSubmitSuccess(true);
     } catch (error: any) {
@@ -221,13 +197,13 @@ export default function OnboardingPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-semibold text-neutral-900 mb-4">
-            Check your email
+            Almost there!
           </h1>
           <p className="text-lg text-neutral-600 mb-6">
             We've sent a confirmation link to your email. Click it to verify your account and access your personalized baby plan.
           </p>
           <p className="text-sm text-neutral-500">
-            You can close this page and check your email.
+            Your personalized answers are saved and will be applied once you verify your email.
           </p>
         </div>
       </div>
