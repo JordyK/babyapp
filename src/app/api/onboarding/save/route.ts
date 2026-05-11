@@ -69,9 +69,19 @@ export async function POST(request: NextRequest) {
 
     console.log(`Saving ${answerRows.length} onboarding answers for user: ${user_id}`);
 
+    // Wait for user to be fully committed to auth.users
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     // Check if user exists in auth.users
     const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(user_id);
     console.log('Auth user check:', { exists: !!authUser, error: authError });
+
+    if (!authUser || authError) {
+      console.error('User does not exist in auth.users yet, retrying...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { data: retryAuthUser, error: retryAuthError } = await supabase.auth.admin.getUserById(user_id);
+      console.log('Retry auth user check:', { exists: !!retryAuthUser, error: retryAuthError });
+    }
 
     // First, ensure user exists in profiles table
     console.log('Creating/updating profile for user:', user_id);
