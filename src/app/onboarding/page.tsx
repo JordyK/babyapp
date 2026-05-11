@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { OnboardingFlow } from '@/components/onboarding';
 import type { OnboardingConfig } from '@/lib/onboarding/types';
