@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardSidebarProps {
   onClose?: () => void;
@@ -12,7 +11,6 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   const pathname = usePathname();
-  const { user } = useAuth();
 
   const navigation = [
     {
@@ -110,15 +108,15 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
             <span className="text-primary-600 font-semibold">
-              {user?.email?.charAt(0).toUpperCase() || 'U'}
+              G
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-neutral-900 truncate">
-              {user?.email?.split('@')[0] || 'User'}
+              Guest
             </p>
             <p className="text-xs text-neutral-500 truncate">
-              {user?.email || 'user@example.com'}
+              guest@example.com
             </p>
           </div>
         </div>

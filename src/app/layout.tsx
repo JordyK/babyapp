@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Inter, Geist } from 'next/font/google';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Header } from '@/components/layout/Header';
-import { AuthProvider } from '@/contexts/AuthContext';
 import '@/styles/globals.css';
 import { cn } from "@/lib/utils";
 
@@ -27,12 +26,10 @@ export default function RootLayout({
     <html lang="en" className={cn("scroll-smooth", "font-sans", geist.variable)}>
       <body className={inter.className}>
         <TooltipProvider>
-          <AuthProvider>
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-          </AuthProvider>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
         </TooltipProvider>
       </body>
     </html>

@@ -1,90 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import React from 'react';
 import { Card, Button } from '@/components/ui';
 import { DashboardLayout } from '@/components/dashboard';
 import { Container } from '@/components/layout';
 
 export default function DashboardPage() {
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    // Check if there are pending onboarding answers to save after email verification
-    const savePendingOnboarding = async () => {
-      if (!user) {
-        console.log('No user yet, skipping onboarding save');
-        return;
-      }
-
-      const pendingAnswers = localStorage.getItem('onboarding-answers');
-      console.log('Checking for pending onboarding answers:', !!pendingAnswers);
-      
-      if (!pendingAnswers) {
-        console.log('No pending onboarding answers found');
-        return;
-      }
-
-      try {
-        const answers = JSON.parse(pendingAnswers);
-        console.log('Found pending answers:', Object.keys(answers));
-        
-        console.log('Calling API to save onboarding answers for user:', user.id);
-        const response = await fetch('/api/onboarding/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: user.id,
-            answers: answers
-          })
-        });
-
-        const result = await response.json();
-        console.log('API response:', result);
-
-        if (response.ok) {
-          console.log('Onboarding answers saved successfully after verification');
-          localStorage.removeItem('onboarding-answers');
-          localStorage.removeItem('pending-user-id');
-        } else {
-          console.error('Failed to save onboarding answers after verification:', result);
-        }
-      } catch (error) {
-        console.error('Error saving pending onboarding answers:', error);
-      }
-    };
-
-    savePendingOnboarding();
-  }, [user]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-neutral-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <Card className="w-full max-w-md p-8 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-4">
-            Not authenticated
-          </h1>
-          <p className="text-neutral-600 mb-6">
-            Please sign in to access your dashboard.
-          </p>
-          <Button className="w-full">Sign in</Button>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <DashboardLayout>

@@ -2,15 +2,12 @@
 
 import React from 'react';
 import { Button } from '@/components/ui';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardTopbarProps {
   onMenuClick: () => void;
 }
 
 export function DashboardTopbar({ onMenuClick }: DashboardTopbarProps) {
-  const { user, signOut, loading } = useAuth();
-
   return (
     <header className="h-16 bg-white border-b border-neutral-200 shadow-sm">
       <div className="flex items-center justify-between h-full px-4 sm:px-6 lg:px-8">
@@ -42,33 +39,19 @@ export function DashboardTopbar({ onMenuClick }: DashboardTopbarProps) {
           <div className="flex items-center space-x-3">
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-neutral-900">
-                {user?.email?.split('@')[0] || 'User'}
+                Guest
               </p>
               <p className="text-xs text-neutral-500">
-                {user?.email || 'user@example.com'}
+                guest@example.com
               </p>
             </div>
             
             <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
               <span className="text-primary-600 font-semibold text-sm">
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
+                G
               </span>
             </div>
           </div>
-
-          {/* Sign out button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={signOut}
-            disabled={loading}
-            className="hidden sm:flex"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign out
-          </Button>
         </div>
       </div>
     </header>

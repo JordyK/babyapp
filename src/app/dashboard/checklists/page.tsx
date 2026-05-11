@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, Button } from '@/components/ui';
 import { DashboardLayout } from '@/components/dashboard';
 import { Container } from '@/components/layout';
@@ -16,7 +15,6 @@ import { generateMockData } from '@/lib/checklist/mockData';
 import type { ChecklistCategory, ChecklistItem, ChecklistItemStatus } from '@/lib/checklist/types';
 
 export default function ChecklistsPage() {
-  const { user, loading } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<ChecklistCategory | null>(null);
   const [items, setItems] = useState<Record<string, ChecklistItem>>({});
 
@@ -74,33 +72,6 @@ export default function ChecklistsPage() {
     ...item,
     ...items[item.id]
   }));
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-neutral-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <Card className="w-full max-w-md p-8 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-4">
-            Not authenticated
-          </h1>
-          <p className="text-neutral-600 mb-6">
-            Please sign in to access your checklists.
-          </p>
-          <Button className="w-full">Sign in</Button>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <DashboardLayout>

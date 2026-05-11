@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardMobileNavProps {
   isOpen: boolean;
@@ -13,7 +12,6 @@ interface DashboardMobileNavProps {
 
 export function DashboardMobileNav({ isOpen, onClose }: DashboardMobileNavProps) {
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
 
   const navigation = [
     {
@@ -128,30 +126,18 @@ export function DashboardMobileNav({ isOpen, onClose }: DashboardMobileNavProps)
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
                 <span className="text-primary-600 font-semibold">
-                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  G
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-neutral-900 truncate">
-                  {user?.email?.split('@')[0] || 'User'}
+                  Guest
                 </p>
                 <p className="text-xs text-neutral-500 truncate">
-                  {user?.email || 'user@example.com'}
+                  guest@example.com
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                signOut();
-                onClose();
-              }}
-              className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-xl transition-colors duration-200"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sign out
-            </button>
           </div>
         </div>
       </div>

@@ -1,40 +1,11 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, Button } from '@/components/ui';
 import { DashboardLayout } from '@/components/dashboard';
 import { Container } from '@/components/layout';
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-neutral-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <Card className="w-full max-w-md p-8 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-4">
-            Not authenticated
-          </h1>
-          <p className="text-neutral-600 mb-6">
-            Please sign in to access your profile.
-          </p>
-          <Button className="w-full">Sign in</Button>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <DashboardLayout>
@@ -64,7 +35,7 @@ export default function ProfilePage() {
                   <div className="flex items-center space-x-6">
                     <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center">
                       <span className="text-primary-600 font-bold text-2xl">
-                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                        G
                       </span>
                     </div>
                     <div>
@@ -93,7 +64,7 @@ export default function ProfilePage() {
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-2">Email Address</label>
                       <div className="p-3 border border-neutral-200 rounded-xl bg-neutral-50">
-                        <span className="text-neutral-600">{user?.email || 'user@example.com'}</span>
+                        <span className="text-neutral-600">guest@example.com</span>
                       </div>
                     </div>
                     <div>
