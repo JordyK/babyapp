@@ -1,30 +1,35 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button, Card, Input } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { signUpSchema, type SignUpFormData } from '@/lib/auth/schemas';
 
-export default function SignUpPage() {
+function SignUpContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signUp, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const prefillEmail = searchParams.get('email') || '';
+  const fromOnboarding = searchParams.get('onboarding') === 'true';
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      email: '',
+      email: prefillEmail,
       password: '',
       confirmPassword: '',
       firstName: '',
@@ -32,6 +37,13 @@ export default function SignUpPage() {
       acceptTerms: false,
     },
   });
+
+  // Pre-fill email if provided in URL
+  useEffect(() => {
+    if (prefillEmail) {
+      setValue('email', prefillEmail);
+    }
+  }, [prefillEmail, setValue]);
 
   const password = watch('password');
 
@@ -235,5 +247,13 @@ export default function SignUpPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">Loading...</div>}>
+      <SignUpContent />
+    </Suspense>
   );
 }

@@ -81,6 +81,18 @@ export default function OnboardingPage() {
               { value: 'apartment', label: "Apartment", description: "Smaller space" },
               { value: 'house', label: "House", description: "More space available" }
             ]
+          },
+          {
+            id: 'email',
+            type: 'email',
+            title: "What's your email?",
+            description: "We'll send your personalized plan here",
+            required: true,
+            validation: [
+              { type: 'required', message: 'Please enter your email' },
+              { type: 'email', message: 'Please enter a valid email' }
+            ],
+            placeholder: 'you@example.com'
           }
         ]
       }
@@ -108,10 +120,16 @@ export default function OnboardingPage() {
     // Save to localStorage for demo purposes
     localStorage.setItem('onboarding-answers', JSON.stringify(answers));
     
-    // Redirect to signup after onboarding investment
+    // Extract email from answers
+    const email = answers.email;
+    
+    // Redirect to signup with email pre-filled after onboarding investment
     // This improves conversion as described in the vision
     setTimeout(() => {
-      window.location.href = '/auth/signup?onboarding=true';
+      const url = email 
+        ? `/auth/signup?onboarding=true&email=${encodeURIComponent(email)}`
+        : '/auth/signup?onboarding=true';
+      window.location.href = url;
     }, 1000);
   };
 

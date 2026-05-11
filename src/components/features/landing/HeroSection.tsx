@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -23,9 +24,11 @@ export const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up">
-            <Button size="lg" className="w-full sm:w-auto">
-              Get Your Personalized Plan
-            </Button>
+            <Link href="/onboarding">
+              <Button size="lg" className="w-full sm:w-auto">
+                Get Your Personalized Plan
+              </Button>
+            </Link>
             <Button variant="secondary" size="lg" className="w-full sm:w-auto">
               How It Works
             </Button>
