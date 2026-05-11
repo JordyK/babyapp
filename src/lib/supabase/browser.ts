@@ -27,10 +27,3 @@ export const createBrowserClient = () => {
   });
 };
 
-/**
- * Singleton browser client instance
- * 
- * Use this for consistent client-side operations.
- * Re-initializes on each request to ensure fresh session state.
- */
-export const supabase = createBrowserClient();

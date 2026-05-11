@@ -6,7 +6,7 @@
  */
 
 // Client configurations
-export { createBrowserClient, supabase } from './browser';
+export { createBrowserClient } from './browser';
 export { createServerClient, createAdminClient } from './server';
 
 // Types
