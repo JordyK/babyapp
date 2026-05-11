@@ -22,27 +22,8 @@ function HomePageContent() {
   // Handle magic link tokens from URL hash
   useEffect(() => {
     const handleMagicLink = async () => {
-      // Check if URL has error in hash (expired link, etc.)
+      // Check if URL has access token in hash (email verification link)
       const hash = window.location.hash;
-      if (hash.includes('error=')) {
-        const urlParams = new URLSearchParams(hash.substring(1));
-        const errorCode = urlParams.get('error_code');
-        const errorDescription = urlParams.get('error_description');
-        
-        if (errorCode === 'otp_expired') {
-          setMagicLinkError('The confirmation link has expired. Please start over to get a new link.');
-        } else if (errorDescription) {
-          setMagicLinkError(errorDescription);
-        } else {
-          setMagicLinkError('There was an error with the confirmation link. Please try again.');
-        }
-        
-        // Clear the hash from URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return;
-      }
-
-      // Check if URL has access token in hash (magic link)
       if (hash.includes('access_token')) {
         setIsHandlingAuth(true);
         try {
@@ -50,8 +31,8 @@ function HomePageContent() {
           const supabase = createBrowserClient();
           await supabase.auth.getSession();
           
-          // Redirect to setup-password page
-          router.replace('/auth/setup-password');
+          // Redirect to dashboard after email verification
+          router.replace('/dashboard');
         } catch (error) {
           console.error('Auth error:', error);
           setMagicLinkError('Failed to process confirmation link. Please try again.');

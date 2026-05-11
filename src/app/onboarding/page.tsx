@@ -93,6 +93,18 @@ export default function OnboardingPage() {
               { type: 'email', message: 'Please enter a valid email' }
             ],
             placeholder: 'you@example.com'
+          },
+          {
+            id: 'password',
+            type: 'text',
+            title: "Create a password",
+            description: "You'll need this to access your plan",
+            required: true,
+            validation: [
+              { type: 'required', message: 'Please create a password' },
+              { type: 'minLength', value: 8, message: 'Password must be at least 8 characters' }
+            ],
+            placeholder: 'Create a strong password'
           }
         ]
       }
@@ -119,8 +131,14 @@ export default function OnboardingPage() {
 
     try {
       const email = answers.email;
+      const password = answers.password;
+      
       if (!email) {
         throw new Error('Email is required');
+      }
+      
+      if (!password) {
+        throw new Error('Password is required');
       }
 
       // Save onboarding answers to localStorage
@@ -129,28 +147,17 @@ export default function OnboardingPage() {
       // Create Supabase client
       const supabase = createBrowserClient();
 
-      // Send magic link for authentication
-      const { error } = await supabase.auth.signInWithOtp({
+      // Sign up user with email and password
+      const { error, data } = await supabase.auth.signUp({
         email,
+        password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/setup-password`
+          emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
 
       if (error) {
-        // If magic link fails, try to sign up with a temporary password
-        const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password: tempPassword,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`
-          }
-        });
-
-        if (signUpError) {
-          throw signUpError;
-        }
+        throw error;
       }
 
       setSubmitSuccess(true);
@@ -175,7 +182,7 @@ export default function OnboardingPage() {
             Check your email
           </h1>
           <p className="text-lg text-neutral-600 mb-6">
-            We've sent a confirmation link to your email. Click it to access your personalized baby plan.
+            We've sent a confirmation link to your email. Click it to verify your account and access your personalized baby plan.
           </p>
           <p className="text-sm text-neutral-500">
             You can close this page and check your email.
