@@ -172,35 +172,33 @@ export default function OnboardingPage() {
 
       console.log('User created with ID:', data.user.id);
 
-      // Save onboarding answers to database
-      // Table structure: question_key, answer_value (individual Q&A pairs)
+      // Save onboarding answers to database using server endpoint
+      // Server uses admin client (service role key) to bypass RLS
       try {
-        console.log('Attempting to save onboarding answers for user:', data.user.id);
+        console.log('Calling server endpoint to save onboarding answers for user:', data.user.id);
         
-        // Convert answers object to array of question-answer pairs
-        const answerRows = Object.entries(answers).map(([questionKey, answerValue]) => ({
-          user_id: data.user.id,
-          question_key: questionKey,
-          answer_value: answerValue
-        }));
+        const response = await fetch('/api/onboarding/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: data.user.id,
+            answers: answers
+          })
+        });
 
-        console.log('Inserting answer rows:', answerRows);
+        const result = await response.json();
 
-        const { error: insertError, data: insertData } = await supabase
-          .from('onboarding_answers' as any)
-          .insert(answerRows)
-          .select();
-
-        if (insertError) {
-          console.error('Failed to save onboarding answers to database:', insertError);
-          console.error('Error details:', JSON.stringify(insertError, null, 2));
-          // Fallback to localStorage if database save fails
+        if (!response.ok) {
+          console.error('Server failed to save onboarding answers:', result);
+          // Fallback to localStorage if server save fails
           localStorage.setItem(`onboarding_answers_${data.user.id}`, JSON.stringify(answers));
         } else {
-          console.log('Successfully saved onboarding answers to database:', insertData);
+          console.log('Server successfully saved onboarding answers:', result);
         }
-      } catch (dbError) {
-        console.error('Database error, using localStorage fallback:', dbError);
+      } catch (serverError) {
+        console.error('Server error, using localStorage fallback:', serverError);
         localStorage.setItem(`onboarding_answers_${data.user.id}`, JSON.stringify(answers));
       }
 
