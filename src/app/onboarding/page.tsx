@@ -1,16 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { OnboardingFlow } from '@/components/onboarding';
 import type { OnboardingConfig } from '@/lib/onboarding/types';
+import { createBrowserClient } from '@/lib/supabase/browser';
+import type { Database } from '@/lib/supabase/types';
 
-/**
- * Sample onboarding page demonstrating the questionnaire engine
- * 
- * This page shows how to configure and use the onboarding system
- * with various question types and validation rules.
- */
 export default function OnboardingPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   // Sample onboarding configuration for baby planning
   const onboardingConfig: OnboardingConfig = {
     id: 'baby-planning-onboarding',
@@ -98,9 +98,7 @@ export default function OnboardingPage() {
       }
     ],
     onComplete: (answers) => {
-      console.log('Onboarding completed!', answers);
-      // Here you would typically save the data to your backend
-      // and redirect to the dashboard or next step
+      // Handled by handleComplete function
     },
     allowSkip: true,
     showProgress: true,
@@ -115,23 +113,77 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleComplete = (answers: any) => {
-    console.log('Onboarding completed with answers:', answers);
-    // Save to localStorage for demo purposes
-    localStorage.setItem('onboarding-answers', JSON.stringify(answers));
-    
-    // Extract email from answers
-    const email = answers.email;
-    
-    // Redirect to signup with email pre-filled after onboarding investment
-    // This improves conversion as described in the vision
-    setTimeout(() => {
-      const url = email 
-        ? `/auth/signup?onboarding=true&email=${encodeURIComponent(email)}`
-        : '/auth/signup?onboarding=true';
-      window.location.href = url;
-    }, 1000);
+  const handleComplete = async (answers: any) => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const email = answers.email;
+      if (!email) {
+        throw new Error('Email is required');
+      }
+
+      // Save onboarding answers to localStorage
+      localStorage.setItem('onboarding-answers', JSON.stringify(answers));
+
+      // Create Supabase client
+      const supabase = createBrowserClient();
+
+      // Send magic link for authentication
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+
+      if (error) {
+        // If magic link fails, try to sign up with a temporary password
+        const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password: tempPassword,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`
+          }
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+      }
+
+      setSubmitSuccess(true);
+    } catch (error: any) {
+      console.error('Onboarding completion error:', error);
+      setSubmitError(error.message || 'Failed to complete onboarding. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (submitSuccess) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md text-center">
+          <div className="w-16 h-16 bg-success-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <svg className="w-8 h-8 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-semibold text-neutral-900 mb-4">
+            Check your email
+          </h1>
+          <p className="text-lg text-neutral-600 mb-6">
+            We've sent a confirmation link to your email. Click it to access your personalized baby plan.
+          </p>
+          <p className="text-sm text-neutral-500">
+            You can close this page and check your email.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50 py-8">
@@ -145,6 +197,12 @@ export default function OnboardingPage() {
             {onboardingConfig.description}
           </p>
         </div>
+
+        {submitError && (
+          <div className="mb-6 p-4 bg-error-50 border border-error-200 rounded-xl">
+            <p className="text-sm text-error-700">{submitError}</p>
+          </div>
+        )}
 
         {/* Onboarding Flow */}
         <OnboardingFlow 
