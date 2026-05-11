@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui';
 import type { Profile } from '@/lib/types/profile';
 import { SignOutButton } from '@/components/dashboard/SignOutButton';
+import { ProfileSync } from '@/components/dashboard/ProfileSync';
 
 const BUDGET_LABELS: Record<string, string> = {
   low: 'Budget-Friendly',
@@ -50,6 +51,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
+      {/* Sync onboarding answers from localStorage after email verification */}
+      <ProfileSync userId={user.id} />
       <div className="max-w-3xl mx-auto px-5 py-8 sm:py-12">
         {/* Welcome header */}
         <div className="flex items-start justify-between mb-10">

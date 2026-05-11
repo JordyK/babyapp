@@ -73,26 +73,16 @@ export default function OnboardingPage() {
         return;
       }
 
-      // Save profile with onboarding answers
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
+      // Save onboarding answers to localStorage for syncing after email verification.
+      // We can't insert directly into profiles here because there is no active
+      // session until the user confirms their email (RLS would block the insert).
+      localStorage.setItem(
+        'onboarding-answers',
+        JSON.stringify({
           full_name: accountData.full_name,
-          due_date: answers.due_date,
-          budget_range: answers.budget_range,
-          first_child: answers.first_child,
-          baby_count: answers.baby_count,
-          home_type: answers.home_type,
-          second_hand_friendly: answers.second_hand_friendly,
-          style_preference: answers.style_preference,
-          onboarding_completed: true,
-        });
-
-      if (profileError) {
-        console.error('Profile save error:', profileError);
-        // Profile save failed but account was created — user can still verify
-      }
+          ...answers,
+        })
+      );
 
       // Redirect to verification page
       router.push('/auth/verify');
