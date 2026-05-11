@@ -26,8 +26,10 @@ export const createBrowserClient = () => {
     url: supabaseUrl,
     hasAnonKey: !!supabaseAnonKey,
     anonKeyLength: supabaseAnonKey?.length || 0,
+    anonKeyPrefix: supabaseAnonKey?.substring(0, 20) + '...',
     envUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    envAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    envAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    envAnonKeyPrefix: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...'
   });
 
   if (!supabaseUrl || !supabaseAnonKey) {
