@@ -176,6 +176,63 @@ export function ChecklistItemCard({
           </div>
         </div>
 
+        {/* Educational Content - Why It Matters */}
+        {item.whyItMatters && (
+          <div className="p-3 bg-primary-50 border border-primary-200 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <svg className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="font-medium text-primary-900 text-sm">Why it matters</p>
+                <p className="text-sm text-primary-700 mt-1">{item.whyItMatters}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Educational Content - Essential vs Optional */}
+        {item.essential !== undefined && (
+          <div className="flex items-center space-x-2 text-sm">
+            <span className={`px-2 py-1 rounded-full font-medium ${
+              item.essential 
+                ? 'bg-success-100 text-success-700' 
+                : 'bg-neutral-100 text-neutral-700'
+            }`}>
+              {item.essential ? 'Essential' : 'Optional'}
+            </span>
+          </div>
+        )}
+
+        {/* Educational Content - Overspend Warning */}
+        {item.overspendWarning && (
+          <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <svg className="w-5 h-5 text-warning-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <p className="font-medium text-warning-900 text-sm">Overspend warning</p>
+                <p className="text-sm text-warning-700 mt-1">{item.overspendWarning}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Educational Content - Second-hand Friendly */}
+        {item.secondHandFriendly !== undefined && (
+          <div className={`flex items-center space-x-2 text-sm p-2 rounded-lg ${
+            item.secondHandFriendly 
+              ? 'bg-success-50 text-success-700' 
+              : 'bg-neutral-50 text-neutral-600'
+          }`}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span>{item.secondHandFriendly ? 'Great for second-hand' : 'Buy new recommended'}</span>
+          </div>
+        )}
+
         {/* Cost Information */}
         {(item.estimatedCost || item.actualCost) && (
           <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">

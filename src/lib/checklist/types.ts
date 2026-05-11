@@ -48,6 +48,11 @@ export interface ChecklistItem {
   dueDate?: Date | undefined;
   tags?: string[] | undefined;
   metadata?: Record<string, any> | undefined;
+  // Educational content fields
+  whyItMatters?: string | undefined;
+  essential?: boolean | undefined;
+  overspendWarning?: string | undefined;
+  secondHandFriendly?: boolean | undefined;
 }
 
 /**

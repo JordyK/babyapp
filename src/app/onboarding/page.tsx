@@ -14,138 +14,72 @@ export default function OnboardingPage() {
   // Sample onboarding configuration for baby planning
   const onboardingConfig: OnboardingConfig = {
     id: 'baby-planning-onboarding',
-    title: 'Welcome to Your Baby Planning Journey',
-    description: 'Let us get to know you better to personalize your experience',
+    title: "Let's create your personalized baby plan",
+    description: "Just a few quick questions to help you figure out exactly what you need",
     steps: [
       {
-        id: 'personal-info',
-        title: 'Tell us about yourself',
-        description: 'This helps us personalize your experience',
+        id: 'quick-start',
+        title: 'Quick questions',
+        description: 'This takes less than 2 minutes',
         questions: [
           {
-            id: 'first-name',
-            type: 'text',
-            title: 'What\'s your first name?',
-            required: true,
-            validation: [
-              { type: 'required', message: 'Please enter your first name' },
-              { type: 'minLength', value: 2, message: 'Name must be at least 2 characters' }
-            ],
-            placeholder: 'Enter your first name'
-          },
-          {
-            id: 'due-date',
-            type: 'date',
-            title: 'When is your due date?',
-            description: 'This helps us track your pregnancy timeline and provide relevant information',
-            required: true,
-            validation: [
-              { type: 'required', message: 'Please select your due date' }
-            ],
-            minDate: new Date(),
-            maxDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-          }
-        ]
-      },
-      {
-        id: 'pregnancy-details',
-        title: 'Pregnancy Details',
-        description: 'Help us understand your current situation',
-        questions: [
-          {
-            id: 'pregnancy-type',
+            id: 'first-child',
             type: 'radio',
-            title: 'Is this your first pregnancy?',
+            title: "Is this your first baby?",
             required: true,
             options: [
-              { value: 'first', label: 'First pregnancy', description: 'This is my first time' },
-              { value: 'second', label: 'Second pregnancy', description: 'I have one child already' },
-              { value: 'third-plus', label: 'Third or more', description: 'I have multiple children' }
+              { value: 'yes', label: "Yes, first baby", description: "I'm new to this" },
+              { value: 'no', label: "No, I've done this before", description: "I have experience" }
             ]
           },
           {
-            id: 'current-week',
-            type: 'slider',
-            title: 'How many weeks pregnant are you?',
+            id: 'due-month',
+            type: 'radio',
+            title: "When are you due?",
             required: true,
-            min: 4,
-            max: 42,
-            step: 1,
-            showValue: true,
-            unit: 'weeks',
-            marks: [
-              { value: 12, label: 'First trimester' },
-              { value: 24, label: 'Second trimester' },
-              { value: 36, label: 'Third trimester' }
+            options: [
+              { value: 'first-trimester', label: "First trimester", description: "Months 1-3" },
+              { value: 'second-trimester', label: "Second trimester", description: "Months 4-6" },
+              { value: 'third-trimester', label: "Third trimester", description: "Months 7-9" }
+            ]
+          },
+          {
+            id: 'budget',
+            type: 'radio',
+            title: "What's your budget range?",
+            required: true,
+            options: [
+              { value: 'budget', label: "Budget-friendly", description: "Save where possible" },
+              { value: 'mid-range', label: "Mid-range", description: "Balance quality and cost" },
+              { value: 'premium', label: "Premium", description: "Quality over cost" }
             ]
           }
         ]
       },
       {
         id: 'preferences',
-        title: 'Your Preferences',
-        description: 'Let us know what matters most to you',
+        title: 'Your style',
+        description: 'Help us tailor recommendations',
         questions: [
           {
-            id: 'interests',
-            type: 'multiple-choice',
-            title: 'What topics are you most interested in?',
-            description: 'Select all that apply',
-            required: true,
-            minSelections: 1,
-            maxSelections: 4,
-            options: [
-              { value: 'nutrition', label: 'Nutrition & Diet', description: 'Healthy eating during pregnancy' },
-              { value: 'exercise', label: 'Exercise & Fitness', description: 'Staying active and healthy' },
-              { value: 'preparation', label: 'Baby Preparation', description: 'Getting ready for baby' },
-              { value: 'checklists', label: 'Checklists & Planning', description: 'Organized preparation lists' },
-              { value: 'community', label: 'Community Support', description: 'Connecting with other parents' }
-            ]
-          },
-          {
-            id: 'communication-style',
+            id: 'second-hand',
             type: 'radio',
-            title: 'How do you prefer to receive information?',
+            title: "Are you open to second-hand items?",
             required: true,
             options: [
-              { value: 'gentle', label: 'Gentle & Calm', description: 'Soft, reassuring guidance' },
-              { value: 'direct', label: 'Direct & Clear', description: 'Straightforward information' },
-              { value: 'detailed', label: 'Detailed & Thorough', description: 'Comprehensive explanations' }
+              { value: 'yes', label: "Absolutely", description: "Save money where possible" },
+              { value: 'some', label: "For some items", description: "Certain things only" },
+              { value: 'no', label: "Prefer new", description: "Everything new" }
             ]
-          }
-        ]
-      },
-      {
-        id: 'final-details',
-        title: 'Just a few more details',
-        description: 'Help us provide the best experience for you',
-        questions: [
-          {
-            id: 'email',
-            type: 'email',
-            title: 'What\'s your email address?',
-            description: 'We\'ll send you personalized tips and updates',
-            required: true,
-            validation: [
-              { type: 'required', message: 'Please enter your email address' },
-              { type: 'email', message: 'Please enter a valid email address' }
-            ],
-            placeholder: 'your.email@example.com'
           },
           {
-            id: 'partner-involvement',
-            type: 'slider',
-            title: 'How involved is your partner in the pregnancy journey?',
-            description: 'This helps us tailor content for both of you',
+            id: 'living-space',
+            type: 'radio',
+            title: "What's your living situation?",
             required: true,
-            min: 1,
-            max: 5,
-            step: 1,
-            showValue: true,
-            marks: [
-              { value: 1, label: 'Not involved' },
-              { value: 3, label: 'Somewhat involved' },
-              { value: 5, label: 'Very involved' }
+            options: [
+              { value: 'apartment', label: "Apartment", description: "Smaller space" },
+              { value: 'house', label: "House", description: "More space available" }
             ]
           }
         ]
@@ -174,10 +108,11 @@ export default function OnboardingPage() {
     // Save to localStorage for demo purposes
     localStorage.setItem('onboarding-answers', JSON.stringify(answers));
     
-    // Redirect to dashboard after a short delay
+    // Redirect to signup after onboarding investment
+    // This improves conversion as described in the vision
     setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 2000);
+      window.location.href = '/auth/signup?onboarding=true';
+    }, 1000);
   };
 
   return (
