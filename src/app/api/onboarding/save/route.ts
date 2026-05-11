@@ -69,16 +69,29 @@ export async function POST(request: NextRequest) {
 
     console.log(`Saving ${answerRows.length} onboarding answers for user: ${user_id}`);
 
+    // Check if user exists in auth.users
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(user_id);
+    console.log('Auth user check:', { exists: !!authUser, error: authError });
+
     // First, ensure user exists in profiles table
-    const { error: profileError } = await supabase
+    console.log('Creating/updating profile for user:', user_id);
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .upsert({ id: user_id, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+      .upsert({ 
+        id: user_id, 
+        updated_at: new Date().toISOString(),
+        onboarding_completed: false
+      }, { onConflict: 'id' })
+      .select();
 
     if (profileError) {
       console.error('Error ensuring profile exists:', profileError);
+    } else {
+      console.log('Profile created/updated successfully:', profileData);
     }
 
     // Insert into database using admin client (bypasses RLS)
+    console.log('Inserting onboarding answers...');
     const { data, error } = await supabase
       .from('onboarding_answers' as any)
       .insert(answerRows as any)
