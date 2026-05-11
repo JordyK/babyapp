@@ -5,6 +5,7 @@ import { Card } from '@/components/ui';
 import type { Profile } from '@/lib/types/profile';
 import { SignOutButton } from '@/components/dashboard/SignOutButton';
 import { ProfileSync } from '@/components/dashboard/ProfileSync';
+import { ProfileQuestions } from '@/components/dashboard/ProfileQuestions';
 
 const BUDGET_LABELS: Record<string, string> = {
   low: 'Budget-Friendly',
@@ -146,8 +147,11 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        {/* Progressive profiling */}
+        {profile && <ProfileQuestions profile={profile} />}
+
         {/* What's next */}
-        <Card className="p-6 bg-white">
+        <Card className="p-6 bg-white mt-8">
           <h2 className="text-lg font-semibold text-neutral-900 mb-3">What&apos;s next?</h2>
           <p className="text-neutral-500 mb-6 leading-relaxed">
             We&apos;re building your personalized checklist based on your preferences. Soon you&apos;ll be able to track everything you need for your baby&apos;s arrival.
