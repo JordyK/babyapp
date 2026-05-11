@@ -1,166 +1,178 @@
-'use client';
-
 import React from 'react';
-import { Card, Button } from '@/components/ui';
-import { DashboardLayout } from '@/components/dashboard';
-import { Container } from '@/components/layout';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { Card } from '@/components/ui';
+import type { Profile } from '@/lib/types/profile';
+import { SignOutButton } from '@/components/dashboard/SignOutButton';
 
-export default function DashboardPage() {
+const BUDGET_LABELS: Record<string, string> = {
+  low: 'Budget-Friendly',
+  medium: 'Balanced',
+  high: 'Premium',
+};
+
+const HOME_LABELS: Record<string, string> = {
+  apartment: 'Apartment',
+  small_house: 'Small House',
+  large_house: 'Large House',
+};
+
+const BABY_COUNT_LABELS: Record<string, string> = {
+  '1': 'One baby',
+  twins: 'Twins',
+  triplets_plus: 'Triplets+',
+};
+
+function getDaysUntilDue(dueDate: string | null): number | null {
+  if (!dueDate) return null;
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diff = due.getTime() - now.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/onboarding');
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single() as { data: Profile | null; error: unknown };
+
+  const daysUntilDue = getDaysUntilDue(profile?.due_date ?? null);
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
 
   return (
-    <DashboardLayout>
-      <Container>
-        <div className="py-8">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div>
-              <h1 className="text-3xl font-semibold text-neutral-900">
-                Your Personalized Baby Plan
-              </h1>
-              <p className="text-neutral-600 mt-2">
-                Step by step, you're getting prepared
-              </p>
-            </div>
+    <div className="min-h-screen bg-neutral-50">
+      <div className="max-w-3xl mx-auto px-5 py-8 sm:py-12">
+        {/* Welcome header */}
+        <div className="flex items-start justify-between mb-10">
+          <div>
+            <h1 className="text-3xl font-semibold text-neutral-900 mb-1">
+              Welcome, {firstName}!
+            </h1>
+            <p className="text-neutral-500">
+              Your personalized baby plan is taking shape.
+            </p>
           </div>
+          <SignOutButton />
+        </div>
 
-          {/* Progress Overview with Milestone Awareness */}
-          <Card className="p-6 mb-8 bg-gradient-to-r from-primary-50 to-accent-50 border-0">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold text-neutral-900 mb-2">Your Progress</h2>
-                <p className="text-neutral-600">You're doing great! Keep going step by step.</p>
-                <div className="mt-3 flex items-center gap-2 text-sm text-neutral-600">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Next milestone: Complete your onboarding</span>
-                </div>
+        {/* Countdown card */}
+        {daysUntilDue !== null && daysUntilDue > 0 && (
+          <Card className="p-6 mb-6 bg-gradient-to-r from-primary-50 to-accent-50 border-0">
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <p className="text-5xl font-bold text-primary-600">{daysUntilDue}</p>
+                <p className="text-sm text-primary-700 font-medium">days to go</p>
               </div>
-              <div className="flex items-center gap-8">
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-primary-500">0%</p>
-                  <p className="text-sm text-neutral-600">Completed</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-accent-500">0</p>
-                  <p className="text-sm text-neutral-600">Items Done</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-success-500">0</p>
-                  <p className="text-sm text-neutral-600">Milestones</p>
-                </div>
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900 mb-1">
+                  Your due date is approaching
+                </h2>
+                <p className="text-sm text-neutral-600">
+                  {daysUntilDue > 90
+                    ? "Plenty of time to get everything ready. No rush!"
+                    : daysUntilDue > 30
+                    ? "Getting closer! Let's make sure the essentials are covered."
+                    : "Almost there! Time to finalize your preparations."}
+                </p>
               </div>
             </div>
           </Card>
+        )}
 
-          {/* Personalized Categories */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-neutral-900 mb-4">Your Essentials by Category</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card className="p-6 hover-lift">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-neutral-900">Nursery</h3>
-                  <span className="text-sm text-neutral-500">0/0</span>
-                </div>
-                <div className="w-full bg-neutral-200 rounded-full h-2 mb-3">
-                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '0%' }}></div>
-                </div>
-                <p className="text-sm text-neutral-600">Crib, changing table, storage</p>
+        {/* Your plan summary */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-4">Your Plan Summary</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {profile?.budget_range && (
+              <Card className="p-4">
+                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Budget</p>
+                <p className="font-medium text-neutral-800">
+                  {BUDGET_LABELS[profile.budget_range] ?? profile.budget_range}
+                </p>
               </Card>
-
-              <Card className="p-6 hover-lift">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-neutral-900">Feeding</h3>
-                  <span className="text-sm text-neutral-500">0/0</span>
-                </div>
-                <div className="w-full bg-neutral-200 rounded-full h-2 mb-3">
-                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '0%' }}></div>
-                </div>
-                <p className="text-sm text-neutral-600">Bottles, nursing, formula prep</p>
+            )}
+            {profile?.baby_count && (
+              <Card className="p-4">
+                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Expecting</p>
+                <p className="font-medium text-neutral-800">
+                  {BABY_COUNT_LABELS[profile.baby_count] ?? profile.baby_count}
+                </p>
               </Card>
-
-              <Card className="p-6 hover-lift">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-neutral-900">Diapering</h3>
-                  <span className="text-sm text-neutral-500">0/0</span>
-                </div>
-                <div className="w-full bg-neutral-200 rounded-full h-2 mb-3">
-                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '0%' }}></div>
-                </div>
-                <p className="text-sm text-neutral-600">Diapers, wipes, changing supplies</p>
+            )}
+            {profile?.home_type && (
+              <Card className="p-4">
+                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Home</p>
+                <p className="font-medium text-neutral-800">
+                  {HOME_LABELS[profile.home_type] ?? profile.home_type}
+                </p>
               </Card>
-
-              <Card className="p-6 hover-lift">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-neutral-900">Clothing</h3>
-                  <span className="text-sm text-neutral-500">0/0</span>
-                </div>
-                <div className="w-full bg-neutral-200 rounded-full h-2 mb-3">
-                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '0%' }}></div>
-                </div>
-                <p className="text-sm text-neutral-600">Onesies, sleepers, outfits</p>
+            )}
+            {profile?.first_child !== null && profile?.first_child !== undefined && (
+              <Card className="p-4">
+                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Experience</p>
+                <p className="font-medium text-neutral-800">
+                  {profile.first_child ? 'First baby' : 'Experienced parent'}
+                </p>
               </Card>
-
-              <Card className="p-6 hover-lift">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-neutral-900">Health & Safety</h3>
-                  <span className="text-sm text-neutral-500">0/0</span>
-                </div>
-                <div className="w-full bg-neutral-200 rounded-full h-2 mb-3">
-                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '0%' }}></div>
-                </div>
-                <p className="text-sm text-neutral-600">Thermometer, first aid kit, monitor</p>
+            )}
+            {profile?.second_hand_friendly !== null && profile?.second_hand_friendly !== undefined && (
+              <Card className="p-4">
+                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Second-hand</p>
+                <p className="font-medium text-neutral-800">
+                  {profile.second_hand_friendly ? 'Open to it' : 'Prefer new'}
+                </p>
               </Card>
-
-              <Card className="p-6 hover-lift">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-neutral-900">Travel</h3>
-                  <span className="text-sm text-neutral-500">0/0</span>
-                </div>
-                <div className="w-full bg-neutral-200 rounded-full h-2 mb-3">
-                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '0%' }}></div>
-                </div>
-                <p className="text-sm text-neutral-600">Car seat, stroller, carrier</p>
+            )}
+            {profile?.style_preference && (
+              <Card className="p-4">
+                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Style</p>
+                <p className="font-medium text-neutral-800 capitalize">
+                  {profile.style_preference}
+                </p>
               </Card>
-            </div>
-          </div>
-
-          {/* Upcoming Priorities */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold text-neutral-900 mb-4">Upcoming Priorities</h2>
-              <div className="text-center py-8">
-                <div className="w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-neutral-500 mb-2">Complete your onboarding</p>
-                <p className="text-sm text-neutral-400">We'll personalize your priorities based on your due date</p>
-                <Button className="mt-4">Start Onboarding</Button>
-              </div>
-            </Card>
-
-            {/* Progressive Profiling */}
-            <Card className="p-6 bg-gradient-to-r from-accent-50 to-primary-50 border-0">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-xl font-semibold text-neutral-900 mb-2">Want more accurate recommendations?</h2>
-                  <p className="text-neutral-600 mb-4">Answer a few optional questions to help us personalize your experience even better.</p>
-                  <Button variant="secondary" className="w-full sm:w-auto">
-                    Improve Recommendations
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            )}
           </div>
         </div>
-      </Container>
-    </DashboardLayout>
+
+        {/* What's next */}
+        <Card className="p-6 bg-white">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-3">What&apos;s next?</h2>
+          <p className="text-neutral-500 mb-6 leading-relaxed">
+            We&apos;re building your personalized checklist based on your preferences. Soon you&apos;ll be able to track everything you need for your baby&apos;s arrival.
+          </p>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-3.5 h-3.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span className="text-neutral-600">Onboarding completed</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-medium text-neutral-400">2</span>
+              </div>
+              <span className="text-neutral-400">Personalized checklist (coming soon)</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-medium text-neutral-400">3</span>
+              </div>
+              <span className="text-neutral-400">Product recommendations (coming soon)</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
   );
 }
