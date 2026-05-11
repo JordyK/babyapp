@@ -103,6 +103,7 @@ export interface TextQuestion extends BaseQuestion {
   minLength?: number;
   pattern?: string;
   inputMode?: 'text' | 'numeric' | 'email' | 'tel';
+  password?: boolean;
 }
 
 /**

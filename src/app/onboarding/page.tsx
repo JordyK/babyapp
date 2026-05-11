@@ -89,8 +89,7 @@ export default function OnboardingPage() {
             description: "We'll send your personalized plan here",
             required: true,
             validation: [
-              { type: 'required', message: 'Please enter your email' },
-              { type: 'email', message: 'Please enter a valid email' }
+              { type: 'required', message: 'Please enter your email' }
             ],
             placeholder: 'you@example.com'
           },
@@ -101,10 +100,10 @@ export default function OnboardingPage() {
             description: "You'll need this to access your plan",
             required: true,
             validation: [
-              { type: 'required', message: 'Please create a password' },
-              { type: 'minLength', value: 8, message: 'Password must be at least 8 characters' }
+              { type: 'required', message: 'Please create a password' }
             ],
-            placeholder: 'Create a strong password'
+            placeholder: 'Create a strong password',
+            password: true
           }
         ]
       }
@@ -158,6 +157,30 @@ export default function OnboardingPage() {
 
       if (error) {
         throw error;
+      }
+
+      // Save onboarding answers to database (table needs to be created in Supabase)
+      // For now, we'll save to localStorage
+      // TODO: Create 'onboarding_answers' table in Supabase with columns: user_id, answers, created_at
+      if (data.user) {
+        try {
+          const { error: insertError } = await supabase
+            .from('onboarding_answers' as any)
+            .insert({
+              user_id: data.user.id,
+              answers: answers,
+              created_at: new Date().toISOString()
+            });
+
+          if (insertError) {
+            console.error('Failed to save onboarding answers to database:', insertError);
+            // Fallback to localStorage if database table doesn't exist
+            localStorage.setItem(`onboarding_answers_${data.user.id}`, JSON.stringify(answers));
+          }
+        } catch (dbError) {
+          console.error('Database error, using localStorage fallback:', dbError);
+          localStorage.setItem(`onboarding_answers_${data.user.id}`, JSON.stringify(answers));
+        }
       }
 
       setSubmitSuccess(true);

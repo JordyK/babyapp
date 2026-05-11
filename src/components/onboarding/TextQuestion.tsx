@@ -52,7 +52,7 @@ export function TextQuestion({ question, value, onChange, error, disabled, theme
         {/* Text Input */}
         <div className="relative">
           <input
-            type={question.inputMode === 'email' ? 'email' : 'text'}
+            type={question.password ? 'password' : (question.inputMode === 'email' ? 'email' : 'text')}
             value={inputValue}
             onChange={handleChange}
             placeholder={question.placeholder || 'Enter your answer'}
@@ -116,7 +116,7 @@ export function TextQuestion({ question, value, onChange, error, disabled, theme
         {isNearLimit() && !isAtLimit() && (
           <div className="flex items-center space-x-2 text-amber-600 bg-amber-50 p-3 rounded-lg">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77-1.333.192 3 1.732 3z" />
             </svg>
             <span>Approaching character limit</span>
           </div>
@@ -129,33 +129,6 @@ export function TextQuestion({ question, value, onChange, error, disabled, theme
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
             <span>Character limit reached</span>
-          </div>
-        )}
-
-        {/* Quick Fill Options (for common inputs) */}
-        {question.inputMode === 'email' && (
-          <div className="space-y-2">
-            <div className="text-sm text-neutral-600 font-medium">Quick examples:</div>
-            <div className="flex flex-wrap gap-2">
-              {['john@example.com', 'sarah@family.com'].map((example) => (
-                <button
-                  key={example}
-                  type="button"
-                  onClick={() => {
-                    setInputValue(example);
-                    onChange(example);
-                  }}
-                  disabled={disabled}
-                  className={cn(
-                    'px-3 py-1 text-sm font-medium rounded-lg border transition-colors duration-200',
-                    'border-neutral-200 bg-white hover:border-primary-300 hover:bg-primary-50',
-                    disabled && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  {example}
-                </button>
-              ))}
-            </div>
           </div>
         )}
       </div>
