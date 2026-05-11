@@ -27,8 +27,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Creating admin client...');
+    console.log('Service key available:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    
     // Create admin client with service role key (bypasses RLS)
-    const supabase = createAdminClient();
+    let supabase;
+    try {
+      supabase = createAdminClient();
+      console.log('Admin client created successfully');
+    } catch (clientError: any) {
+      console.error('Failed to create admin client:', clientError);
+      return NextResponse.json(
+        { error: 'Failed to create database client', message: clientError.message },
+        { status: 500 }
+      );
+    }
 
     // Convert answers object to array of question-answer pairs
     const answerRows = Object.entries(answers).map(([questionKey, answerValue]) => ({
@@ -64,10 +77,12 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Server error saving onboarding answers:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', message: error.message },
       { status: 500 }
     );
   }
