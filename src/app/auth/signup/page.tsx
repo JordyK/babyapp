@@ -74,10 +74,14 @@ function SignUpContent() {
         setSubmitError(error);
       } else {
         setSubmitSuccess(true);
-        // Redirect to sign in page after successful signup
+        // Redirect to dashboard if coming from onboarding, otherwise to sign in
         setTimeout(() => {
-          router.push('/auth/signin?message=check-email');
-        }, 3000);
+          if (fromOnboarding) {
+            router.push('/dashboard');
+          } else {
+            router.push('/auth/signin?message=check-email');
+          }
+        }, 2000);
       }
     } catch (error) {
       setSubmitError('An unexpected error occurred');
@@ -116,10 +120,13 @@ function SignUpContent() {
       <Card className="w-full max-w-md p-8">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-semibold text-neutral-900 mb-2">
-            Create your account
+            {fromOnboarding ? 'Confirm your email' : 'Create your account'}
           </h1>
           <p className="text-neutral-600">
-            Start your peaceful journey into parenthood
+            {fromOnboarding 
+              ? 'We\'ll send you a confirmation link to get started'
+              : 'Start your peaceful journey into parenthood'
+            }
           </p>
         </div>
 
@@ -130,28 +137,30 @@ function SignUpContent() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Input
-                label="First Name"
-                type="text"
-                placeholder="Sarah"
-                {...register('firstName')}
-                error={errors.firstName?.message}
-                disabled={isSubmitting || loading}
-              />
+          {!fromOnboarding && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Input
+                  label="First Name"
+                  type="text"
+                  placeholder="Sarah"
+                  {...register('firstName')}
+                  error={errors.firstName?.message}
+                  disabled={isSubmitting || loading}
+                />
+              </div>
+              <div>
+                <Input
+                  label="Last Name"
+                  type="text"
+                  placeholder="Johnson"
+                  {...register('lastName')}
+                  error={errors.lastName?.message}
+                  disabled={isSubmitting || loading}
+                />
+              </div>
             </div>
-            <div>
-              <Input
-                label="Last Name"
-                type="text"
-                placeholder="Johnson"
-                {...register('lastName')}
-                error={errors.lastName?.message}
-                disabled={isSubmitting || loading}
-              />
-            </div>
-          </div>
+          )}
 
           <Input
             label="Email Address"
@@ -160,9 +169,18 @@ function SignUpContent() {
             autoComplete="email"
             {...register('email')}
             error={errors.email?.message}
-            disabled={isSubmitting || loading}
+            disabled={isSubmitting || loading || fromOnboarding}
             required
+            readOnly={fromOnboarding}
           />
+
+          {fromOnboarding && (
+            <div className="p-4 bg-primary-50 border border-primary-200 rounded-xl">
+              <p className="text-sm text-primary-700">
+                We'll send a confirmation link to <strong>{prefillEmail}</strong>
+              </p>
+            </div>
+          )}
 
           <Input
             label="Password"
@@ -175,16 +193,18 @@ function SignUpContent() {
             required
           />
 
-          <Input
-            label="Confirm Password"
-            type="password"
-            placeholder="Confirm your password"
-            autoComplete="new-password"
-            {...register('confirmPassword')}
-            error={errors.confirmPassword?.message}
-            disabled={isSubmitting || loading}
-            required
-          />
+          {!fromOnboarding && (
+            <Input
+              label="Confirm Password"
+              type="password"
+              placeholder="Confirm your password"
+              autoComplete="new-password"
+              {...register('confirmPassword')}
+              error={errors.confirmPassword?.message}
+              disabled={isSubmitting || loading}
+              required
+            />
+          )}
 
           {password && (
             <div className="text-sm text-neutral-600">
@@ -233,7 +253,7 @@ function SignUpContent() {
             disabled={isSubmitting || loading}
             loading={isSubmitting || loading}
           >
-            {isSubmitting ? 'Creating account...' : 'Create account'}
+            {isSubmitting ? 'Creating account...' : fromOnboarding ? 'Send confirmation link' : 'Create account'}
           </Button>
         </form>
 
