@@ -270,7 +270,7 @@ export function OnboardingFlow({ config, onComplete, className }: OnboardingFlow
 
           <Button
             onClick={handleNext}
-            disabled={!canGoNext || state.isLoading}
+            disabled={(!canGoNext && !isLastStep) || state.isLoading}
             loading={state.isLoading}
           >
             {isLastStep ? 'Complete' : 'Next'}
