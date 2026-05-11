@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
-import { cn } from '@/lib/utils/cn';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   readonly className?: string;
