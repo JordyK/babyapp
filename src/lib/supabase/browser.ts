@@ -15,14 +15,23 @@ let browserClient: ReturnType<typeof createClient<Database>> | null = null;
 
 export const createBrowserClient = () => {
   if (browserClient) {
+    console.log('[Supabase Client] Returning existing singleton instance');
     return browserClient;
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dmtnjzmwkaprsuoscfrr.supabase.co';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_LPAX4IE_xWleRjXOBQQFOQ_NTDyS4fa';
-  
+
+  console.log('[Supabase Client] Initializing with:', {
+    url: supabaseUrl,
+    hasAnonKey: !!supabaseAnonKey,
+    anonKeyLength: supabaseAnonKey?.length || 0,
+    envUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    envAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  });
+
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables');
+    console.error('[Supabase Client] Missing Supabase environment variables');
     throw new Error('Missing Supabase environment variables');
   }
 
@@ -34,6 +43,7 @@ export const createBrowserClient = () => {
     },
   });
 
+  console.log('[Supabase Client] Successfully initialized');
   return browserClient;
 };
 

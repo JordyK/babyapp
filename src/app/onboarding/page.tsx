@@ -122,6 +122,7 @@ export default function OnboardingPage() {
   };
 
   const handleComplete = async (answers: any) => {
+    console.log('[Onboarding] handleComplete called with answers:', Object.keys(answers));
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -130,21 +131,32 @@ export default function OnboardingPage() {
       const password = answers.password;
       const fullName = answers['full-name'];
       
+      console.log('[Onboarding] Extracted form data:', {
+        hasEmail: !!email,
+        hasPassword: !!password,
+        hasFullName: !!fullName,
+        email: email
+      });
+
       if (!email) {
+        console.error('[Onboarding] Email is required');
         throw new Error('Email is required');
       }
       
       if (!password) {
+        console.error('[Onboarding] Password is required');
         throw new Error('Password is required');
       }
 
       // Save onboarding answers to localStorage (will be saved to DB after email verification)
+      console.log('[Onboarding] Saving answers to localStorage');
       localStorage.setItem('onboarding-answers', JSON.stringify(answers));
 
       // Create Supabase client
+      console.log('[Onboarding] Creating Supabase client');
       const supabase = createBrowserClient();
 
-      console.log('Attempting to sign up user:', email);
+      console.log('[Onboarding] Attempting to sign up user:', email);
 
       // Sign up user with email and password
       const { error, data } = await supabase.auth.signUp({
@@ -160,27 +172,37 @@ export default function OnboardingPage() {
         }
       });
 
+      console.log('[Onboarding] SignUp response:', {
+        hasError: !!error,
+        hasData: !!data,
+        hasUser: !!data?.user,
+        hasSession: !!data?.session,
+        error: error?.message,
+        userId: data?.user?.id
+      });
+
       if (error) {
-        console.error('Supabase signUp error:', error);
+        console.error('[Onboarding] Supabase signUp error:', error);
         throw error;
       }
 
-      console.log('Sign up successful:', data);
+      console.log('[Onboarding] Sign up successful:', data);
 
       // Check if user was actually created
       if (!data.user) {
-        console.error('No user data returned from signUp');
+        console.error('[Onboarding] No user data returned from signUp');
         throw new Error('Failed to create user account');
       }
 
-      console.log('User created with ID:', data.user.id);
+      console.log('[Onboarding] User created with ID:', data.user.id);
 
       // Save user ID to localStorage for post-verification processing
+      console.log('[Onboarding] Saving user ID to localStorage');
       localStorage.setItem('pending-user-id', data.user.id);
 
       setSubmitSuccess(true);
     } catch (error: any) {
-      console.error('Onboarding completion error:', error);
+      console.error('[Onboarding] Onboarding completion error:', error);
       setSubmitError(error.message || 'Failed to complete onboarding. Please try again.');
     } finally {
       setIsSubmitting(false);

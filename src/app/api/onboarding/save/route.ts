@@ -8,12 +8,22 @@ import { NextRequest, NextResponse } from 'next/server';
  * This allows saving onboarding data even when user hasn't confirmed email yet
  */
 export async function POST(request: NextRequest) {
+  console.log('[API Onboarding Save] POST request received');
+  
   try {
     const body = await request.json();
     const { user_id, answers } = body;
 
+    console.log('[API Onboarding Save] Request body:', {
+      hasUserId: !!user_id,
+      hasAnswers: !!answers,
+      userId: user_id,
+      answerKeys: answers ? Object.keys(answers) : []
+    });
+
     // Validate required fields
     if (!user_id) {
+      console.error('[API Onboarding Save] User ID is required');
       return NextResponse.json(
         { error: 'User ID is required' },
         { status: 400 }
@@ -21,6 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!answers || typeof answers !== 'object') {
+      console.error('[API Onboarding Save] Answers object is required');
       return NextResponse.json(
         { error: 'Answers object is required' },
         { status: 400 }
@@ -31,12 +42,14 @@ export async function POST(request: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    console.log('Environment check:');
-    console.log('- NEXT_PUBLIC_SUPABASE_URL available:', !!supabaseUrl);
-    console.log('- SUPABASE_SERVICE_ROLE_KEY available:', !!supabaseServiceKey);
-    console.log('- Service key length:', supabaseServiceKey ? supabaseServiceKey.length : 0);
+    console.log('[API Onboarding Save] Environment check:', {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey,
+      serviceKeyLength: supabaseServiceKey ? supabaseServiceKey.length : 0
+    });
     
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('[API Onboarding Save] Missing environment variables');
       return NextResponse.json(
         { 
           error: 'Missing environment variables', 
@@ -50,6 +63,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Create admin client with service role key (bypasses RLS)
+    console.log('[API Onboarding Save] Creating admin client');
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         persistSession: false,
@@ -58,7 +72,7 @@ export async function POST(request: NextRequest) {
       },
     });
     
-    console.log('Admin client created successfully');
+    console.log('[API Onboarding Save] Admin client created successfully');
 
     // Convert answers object to array of question-answer pairs
     const answerRows = Object.entries(answers).map(([questionKey, answerValue]) => ({
@@ -67,10 +81,11 @@ export async function POST(request: NextRequest) {
       answer_value: answerValue,
     }));
 
-    console.log(`Saving ${answerRows.length} onboarding answers for user: ${user_id}`);
+    console.log(`[API Onboarding Save] Saving ${answerRows.length} onboarding answers for user: ${user_id}`);
+    console.log('[API Onboarding Save] Answer rows:', answerRows);
 
     // First, ensure user exists in profiles table
-    console.log('Creating/updating profile for user:', user_id);
+    console.log('[API Onboarding Save] Creating/updating profile for user:', user_id);
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .upsert({ 
@@ -80,28 +95,43 @@ export async function POST(request: NextRequest) {
       }, { onConflict: 'id' })
       .select();
 
+    console.log('[API Onboarding Save] Profile upsert result:', {
+      hasError: !!profileError,
+      hasData: !!profileData,
+      error: profileError?.message,
+      data: profileData
+    });
+
     if (profileError) {
-      console.error('Error ensuring profile exists:', profileError);
+      console.error('[API Onboarding Save] Error ensuring profile exists:', profileError);
     } else {
-      console.log('Profile created/updated successfully:', profileData);
+      console.log('[API Onboarding Save] Profile created/updated successfully:', profileData);
     }
 
     // Insert into database using admin client (bypasses RLS)
-    console.log('Inserting onboarding answers...');
+    console.log('[API Onboarding Save] Inserting onboarding answers...');
     const { data, error } = await supabase
       .from('onboarding_answers' as any)
       .insert(answerRows as any)
       .select();
 
+    console.log('[API Onboarding Save] Insert result:', {
+      hasError: !!error,
+      hasData: !!data,
+      error: error?.message,
+      errorDetails: error,
+      dataLength: data?.length || 0
+    });
+
     if (error) {
-      console.error('Database insert error:', error);
+      console.error('[API Onboarding Save] Database insert error:', error);
       return NextResponse.json(
         { error: 'Failed to save onboarding answers', details: error },
         { status: 500 }
       );
     }
 
-    console.log(`Successfully saved ${data?.length || 0} onboarding answers for user: ${user_id}`);
+    console.log(`[API Onboarding Save] Successfully saved ${data?.length || 0} onboarding answers for user: ${user_id}`);
 
     return NextResponse.json(
       { 
