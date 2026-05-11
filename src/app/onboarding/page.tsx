@@ -146,6 +146,8 @@ export default function OnboardingPage() {
       // Create Supabase client
       const supabase = createBrowserClient();
 
+      console.log('Attempting to sign up user:', email);
+
       // Sign up user with email and password
       const { error, data } = await supabase.auth.signUp({
         email,
@@ -156,14 +158,18 @@ export default function OnboardingPage() {
       });
 
       if (error) {
+        console.error('Supabase signUp error:', error);
         throw error;
       }
+
+      console.log('Sign up successful:', data);
 
       // Save onboarding answers to database (table needs to be created in Supabase)
       // For now, we'll save to localStorage
       // TODO: Create 'onboarding_answers' table in Supabase with columns: user_id, answers, created_at
       if (data.user) {
         try {
+          console.log('Attempting to save onboarding answers for user:', data.user.id);
           const { error: insertError } = await supabase
             .from('onboarding_answers' as any)
             .insert({
@@ -176,6 +182,8 @@ export default function OnboardingPage() {
             console.error('Failed to save onboarding answers to database:', insertError);
             // Fallback to localStorage if database table doesn't exist
             localStorage.setItem(`onboarding_answers_${data.user.id}`, JSON.stringify(answers));
+          } else {
+            console.log('Successfully saved onboarding answers to database');
           }
         } catch (dbError) {
           console.error('Database error, using localStorage fallback:', dbError);

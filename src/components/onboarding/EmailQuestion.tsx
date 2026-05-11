@@ -107,43 +107,6 @@ export function EmailQuestion({ question, value, onChange, error, disabled, them
           </div>
         )}
 
-        {/* Quick Email Options */}
-        <div className="space-y-2">
-          <div className="text-sm text-neutral-600 font-medium">Quick examples:</div>
-          <div className="grid grid-cols-2 gap-2">
-            {commonEmails.slice(0, 4).map((email) => (
-              <button
-                key={email}
-                type="button"
-                onClick={() => {
-                  setInputValue(email);
-                  onChange(email);
-                  setIsValid(validateEmail(email));
-                }}
-                disabled={disabled}
-                className={cn(
-                  'px-3 py-2 text-sm font-medium rounded-lg border-2 transition-colors duration-200',
-                  'border-neutral-200 bg-white hover:border-primary-300 hover:bg-primary-50',
-                  disabled && 'opacity-50 cursor-not-allowed'
-                )}
-              >
-                {email}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Email Format Info */}
-        <div className="text-sm text-neutral-500 bg-neutral-50 p-3 rounded-lg">
-          <div className="font-medium mb-1">Email format requirements:</div>
-          <ul className="space-y-1 text-xs">
-            <li>• Must contain an @ symbol</li>
-            <li>• Must have a domain after the @</li>
-            <li>• No spaces allowed</li>
-            <li>• Example: user@domain.com</li>
-          </ul>
-        </div>
-
         {/* Privacy Note */}
         <div className="flex items-start space-x-2 text-xs text-neutral-500">
           <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
