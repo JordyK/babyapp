@@ -132,10 +132,67 @@ ALTER TABLE public.profiles
 
 ---
 
+## checklist_items
+
+Master catalog of curated baby items with personalization conditions.
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| id | uuid | NO | Primary key (auto-generated) |
+| name | text | NO | Item display name |
+| description | text | NO | Short helpful context |
+| category | text | NO | nursery, feeding, diapering, clothing, bathing, health_safety, travel_gear, play_development |
+| priority | text | NO | essential, recommended, nice_to_have |
+| conditions | jsonb | YES | Personalization rules, e.g. `{"feeding_preference": ["breastfeeding"]}` |
+| sort_order | int | NO | Ordering within category |
+| created_at | timestamptz | NO | Record creation |
+
+**RLS**: Read-only for all authenticated users.
+
+---
+
+## user_checklist
+
+Per-user checklist state — tracks status of each item for a specific user.
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| id | uuid | NO | Primary key (auto-generated) |
+| user_id | uuid | NO | FK → auth.users(id) |
+| item_id | uuid | YES | FK → checklist_items(id), null for custom items |
+| name | text | NO | Item name (denormalized or custom) |
+| category | text | NO | Same categories as checklist_items |
+| status | text | NO | pending, done, skipped |
+| is_custom | boolean | NO | true if user-added |
+| sort_order | int | NO | Ordering |
+| created_at | timestamptz | NO | Record creation |
+| updated_at | timestamptz | NO | Last update |
+
+**RLS**: Users can only CRUD their own rows (`user_id = auth.uid()`).
+
+---
+
 ## Row Level Security
+
+### profiles
 
 | Policy | Operation | Rule |
 |--------|-----------|------|
 | Users can view their own profile | SELECT | auth.uid() = id |
 | Users can update their own profile | UPDATE | auth.uid() = id |
 | Users can insert their own profile | INSERT | auth.uid() = id |
+
+### checklist_items
+
+| Policy | Operation | Rule |
+|--------|-----------|------|
+| Anyone can read checklist items | SELECT | authenticated |
+
+### user_checklist
+
+| Policy | Operation | Rule |
+|--------|-----------|------|
+| Users can view their own checklist | SELECT | auth.uid() = user_id |
+| Users can insert their own items | INSERT | auth.uid() = user_id |
+| Users can update their own items | UPDATE | auth.uid() = user_id |
+| Users can delete their own items | DELETE | auth.uid() = user_id |

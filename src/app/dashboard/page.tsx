@@ -1,8 +1,10 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui';
 import type { Profile } from '@/lib/types/profile';
+import type { UserChecklistItem } from '@/lib/types/checklist';
 import { SignOutButton } from '@/components/dashboard/SignOutButton';
 import { ProfileSync } from '@/components/dashboard/ProfileSync';
 import { ProfileQuestions } from '@/components/dashboard/ProfileQuestions';
@@ -47,6 +49,16 @@ export default async function DashboardPage() {
     .select('*')
     .eq('id', user.id)
     .single() as { data: Profile | null; error: unknown };
+
+  // Fetch checklist stats
+  const { data: checklistItems } = await supabase
+    .from('user_checklist')
+    .select('status')
+    .eq('user_id', user.id) as { data: Pick<UserChecklistItem, 'status'>[] | null; error: unknown };
+
+  const totalChecklist = checklistItems?.length ?? 0;
+  const doneChecklist = checklistItems?.filter((i) => i.status === 'done').length ?? 0;
+  const checklistPercent = totalChecklist > 0 ? Math.round((doneChecklist / totalChecklist) * 100) : 0;
 
   const daysUntilDue = getDaysUntilDue(profile?.due_date ?? null);
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
@@ -169,35 +181,40 @@ export default async function DashboardPage() {
             : <ProfileQuestions profile={profile} />
         )}
 
-        {/* What's next */}
-        <Card className="p-6 bg-white mt-8">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-3">What&apos;s next?</h2>
-          <p className="text-neutral-500 mb-6 leading-relaxed">
-            We&apos;re building your personalized checklist based on your preferences. Soon you&apos;ll be able to track everything you need for your baby&apos;s arrival.
-          </p>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-3.5 h-3.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <span className="text-neutral-600">Onboarding completed</span>
+        {/* Checklist summary */}
+        <Link href="/dashboard/checklist" className="block mt-8">
+          <Card className="p-6 bg-white hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-neutral-900">Your Checklist</h2>
+              <svg className="w-5 h-5 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-medium text-neutral-400">2</span>
-              </div>
-              <span className="text-neutral-400">Personalized checklist (coming soon)</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-medium text-neutral-400">3</span>
-              </div>
-              <span className="text-neutral-400">Product recommendations (coming soon)</span>
-            </div>
-          </div>
-        </Card>
+            {totalChecklist > 0 ? (
+              <>
+                <div className="flex items-center gap-4 mb-3">
+                  <p className="text-3xl font-bold text-primary-600">{checklistPercent}%</p>
+                  <div className="text-sm text-neutral-500">
+                    <p>{doneChecklist} of {totalChecklist} items done</p>
+                    <p className="text-xs text-neutral-400">
+                      {totalChecklist - doneChecklist} remaining
+                    </p>
+                  </div>
+                </div>
+                <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary-500 rounded-full transition-all duration-500"
+                    style={{ width: `${checklistPercent}%` }}
+                  />
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-neutral-400">
+                Your personalized checklist is ready. Tap to start checking things off!
+              </p>
+            )}
+          </Card>
+        </Link>
       </div>
     </div>
   );
