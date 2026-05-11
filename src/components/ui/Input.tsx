@@ -2,17 +2,33 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+interface InputProps extends React.ComponentProps<"input"> {
+  label?: string;
+  error?: string | undefined;
+}
+
+function Input({ className, type, label, error, ...props }: InputProps) {
   return (
-    <input
-      type={type}
-      data-slot="input"
-      className={cn(
-        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
-        className
+    <div className="space-y-2">
+      {label && (
+        <label className="text-sm font-medium text-neutral-700 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {label}
+        </label>
       )}
-      {...props}
-    />
+      <input
+        type={type}
+        data-slot="input"
+        className={cn(
+          "h-12 w-full min-w-0 rounded-xl border border-neutral-300 bg-transparent px-4 py-3 text-base transition-colors outline-none placeholder:text-neutral-500 focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500/20 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:opacity-50 aria-invalid:border-error-500 aria-invalid:ring-2 aria-invalid:ring-error-500/20",
+          error && "border-error-500 focus-visible:border-error-500 focus-visible:ring-error-500/20",
+          className
+        )}
+        {...props}
+      />
+      {error && (
+        <p className="text-sm text-error-600">{error}</p>
+      )}
+    </div>
   )
 }
 

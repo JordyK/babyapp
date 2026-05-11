@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { Inter, Geist } from 'next/font/google';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { LayoutWrapper } from '@/components/layout';
+import { AuthProvider } from '@/contexts/AuthContext';
 import '@/styles/globals.css';
 import { cn } from "@/lib/utils";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
 const inter = Inter({ 
   subsets: ['latin'],
   display: 'swap',
@@ -13,8 +14,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Baby Planning Platform',
-  description: 'A modern baby planning platform that helps expecting parents create personalized baby essentials checklists.',
+  title: 'Baby Planning Platform | Your Peaceful Journey Starts Here',
+  description: 'Transform baby planning from overwhelming to organized. Create personalized checklists, get expert guidance, and enjoy a calm, confident journey into parenthood.',
 };
 
 export default function RootLayout({
@@ -26,7 +27,11 @@ export default function RootLayout({
     <html lang="en" className={cn("scroll-smooth", "font-sans", geist.variable)}>
       <body className={inter.className}>
         <TooltipProvider>
-          {children}
+          <AuthProvider>
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
+          </AuthProvider>
         </TooltipProvider>
       </body>
     </html>
