@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -27,21 +27,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Creating admin client...');
-    console.log('Service key available:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    // Get environment variables directly
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
-    // Create admin client with service role key (bypasses RLS)
-    let supabase;
-    try {
-      supabase = createAdminClient();
-      console.log('Admin client created successfully');
-    } catch (clientError: any) {
-      console.error('Failed to create admin client:', clientError);
+    console.log('Environment check:');
+    console.log('- NEXT_PUBLIC_SUPABASE_URL available:', !!supabaseUrl);
+    console.log('- SUPABASE_SERVICE_ROLE_KEY available:', !!supabaseServiceKey);
+    console.log('- Service key length:', supabaseServiceKey ? supabaseServiceKey.length : 0);
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
-        { error: 'Failed to create database client', message: clientError.message },
+        { 
+          error: 'Missing environment variables', 
+          details: {
+            urlAvailable: !!supabaseUrl,
+            keyAvailable: !!supabaseServiceKey
+          }
+        },
         { status: 500 }
       );
     }
+    
+    // Create admin client with service role key (bypasses RLS)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
+    
+    console.log('Admin client created successfully');
 
     // Convert answers object to array of question-answer pairs
     const answerRows = Object.entries(answers).map(([questionKey, answerValue]) => ({
