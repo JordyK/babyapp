@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button, Card, Input } from '@/components/ui';
-import { useAuth } from '@/contexts/AuthContext';
+import { createBrowserClient } from '@/lib/supabase/browser';
 import { z } from 'zod';
 
 const setPasswordSchema = z.object({
@@ -21,11 +21,13 @@ const setPasswordSchema = z.object({
 
 type SetPasswordFormData = z.infer<typeof setPasswordSchema>;
 
-export default function SetupPasswordPage() {
+function SetupPasswordContent() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const {
     register,
@@ -42,32 +44,57 @@ export default function SetupPasswordPage() {
 
   const password = watch('password');
 
-  // Redirect if user is not authenticated (shouldn't happen if coming from magic link)
+  // Handle magic link authentication
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/signin');
-    }
-  }, [user, loading, router]);
+    const handleAuth = async () => {
+      const supabase = createBrowserClient();
+      
+      // Check if user is already authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Handle magic link tokens from URL hash
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Auth error:', error);
+        setSubmitError(error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.session) {
+        setIsAuthenticated(true);
+      } else {
+        // If no session, redirect to signin
+        router.push('/auth/signin');
+      }
+      
+      setIsLoading(false);
+    };
+
+    handleAuth();
+  }, [router]);
 
   const onSubmit = async (data: SetPasswordFormData) => {
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
+      const supabase = createBrowserClient();
+
       // Update user password
-      const response = await fetch('/api/auth/update-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          password: data.password,
-        }),
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: data.password
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to set password');
+      if (updateError) {
+        throw updateError;
       }
 
       // Redirect to dashboard after successful password setup
@@ -80,13 +107,26 @@ export default function SetupPasswordPage() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
           <p className="text-neutral-600">Loading...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 text-center">
+          <p className="text-neutral-600 mb-4">Authentication required</p>
+          <Button onClick={() => router.push('/auth/signin')}>
+            Go to Sign In
+          </Button>
+        </Card>
       </div>
     );
   }
@@ -160,5 +200,13 @@ export default function SetupPasswordPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function SetupPasswordPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">Loading...</div>}>
+      <SetupPasswordContent />
+    </React.Suspense>
   );
 }
