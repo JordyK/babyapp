@@ -1,10 +1,6 @@
-'use client';
-
 import React, { useState } from 'react';
 import { OnboardingFlow } from '@/components/onboarding';
 import type { OnboardingConfig } from '@/lib/onboarding/types';
-import { createBrowserClient } from '@/lib/supabase/browser';
-import type { Database } from '@/lib/supabase/types';
 
 export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,47 +58,6 @@ export default function OnboardingPage() {
             ]
           }
         ]
-      },
-      {
-        id: 'account',
-        title: 'Create your account',
-        description: 'Save your plan and access it anytime',
-        questions: [
-          {
-            id: 'full-name',
-            type: 'text',
-            title: "What's your full name?",
-            description: "We'll personalize your experience",
-            required: true,
-            validation: [
-              { type: 'required', message: 'Please enter your name' }
-            ],
-            placeholder: 'Your full name'
-          },
-          {
-            id: 'email',
-            type: 'email',
-            title: "What's your email?",
-            description: "We'll send your personalized plan here",
-            required: true,
-            validation: [
-              { type: 'required', message: 'Please enter your email' }
-            ],
-            placeholder: 'you@example.com'
-          },
-          {
-            id: 'password',
-            type: 'text',
-            title: "Create a password",
-            description: "You'll need this to access your plan",
-            required: true,
-            validation: [
-              { type: 'required', message: 'Please create a password' }
-            ],
-            placeholder: 'Create a strong password',
-            password: true
-          }
-        ]
       }
     ],
     onComplete: (answers) => {
@@ -127,89 +82,9 @@ export default function OnboardingPage() {
     setSubmitError(null);
 
     try {
-      const email = answers.email;
-      const password = answers.password;
-      const fullName = answers['full-name'];
-      
-      console.log('[Onboarding] Extracted form data:', {
-        hasEmail: !!email,
-        hasPassword: !!password,
-        hasFullName: !!fullName,
-        email: email
-      });
-
-      if (!email) {
-        console.error('[Onboarding] Email is required');
-        throw new Error('Email is required');
-      }
-      
-      if (!password) {
-        console.error('[Onboarding] Password is required');
-        throw new Error('Password is required');
-      }
-
-      // Save onboarding answers to localStorage (will be saved to DB after email verification)
+      // Save onboarding answers to localStorage
       console.log('[Onboarding] Saving answers to localStorage');
       localStorage.setItem('onboarding-answers', JSON.stringify(answers));
-
-      // Create Supabase client
-      console.log('[Onboarding] Creating Supabase client');
-      const supabase = createBrowserClient();
-
-      console.log('[Onboarding] Attempting to sign up user:', email);
-
-      // Sign up user with email and password
-      console.log('[Onboarding] Calling Supabase auth.signUp with:', {
-        email,
-        hasPassword: !!password,
-        fullName,
-        emailRedirectTo: `${window.location.origin}/dashboard`
-      });
-
-      const { error, data } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            first_name: fullName?.split(' ')[0],
-            last_name: fullName?.split(' ').slice(1).join(' '),
-          },
-          emailRedirectTo: `${window.location.origin}/dashboard`
-        }
-      });
-
-      console.log('[Onboarding] SignUp response:', {
-        hasError: !!error,
-        hasData: !!data,
-        hasUser: !!data?.user,
-        hasSession: !!data?.session,
-        error: error?.message,
-        errorDetails: error,
-        userId: data?.user?.id,
-        userEmail: data?.user?.email,
-        userConfirmedAt: data?.user?.confirmed_at,
-        userCreatedAt: data?.user?.created_at
-      });
-
-      if (error) {
-        console.error('[Onboarding] Supabase signUp error:', error);
-        throw error;
-      }
-
-      console.log('[Onboarding] Sign up successful:', data);
-
-      // Check if user was actually created
-      if (!data.user) {
-        console.error('[Onboarding] No user data returned from signUp');
-        throw new Error('Failed to create user account');
-      }
-
-      console.log('[Onboarding] User created with ID:', data.user.id);
-
-      // Save user ID to localStorage for post-verification processing
-      console.log('[Onboarding] Saving user ID to localStorage');
-      localStorage.setItem('pending-user-id', data.user.id);
 
       setSubmitSuccess(true);
     } catch (error: any) {
@@ -226,17 +101,17 @@ export default function OnboardingPage() {
         <div className="w-full max-w-md text-center">
           <div className="w-16 h-16 bg-success-100 rounded-full mx-auto mb-6 flex items-center justify-center">
             <svg className="w-8 h-8 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <h1 className="text-3xl font-semibold text-neutral-900 mb-4">
-            Almost there!
+            Onboarding Complete!
           </h1>
           <p className="text-lg text-neutral-600 mb-6">
-            We've sent a confirmation link to your email. Click it to verify your account and access your personalized baby plan.
+            Your personalized baby plan has been saved.
           </p>
           <p className="text-sm text-neutral-500">
-            Your personalized answers are saved and will be applied once you verify your email.
+            Your answers are saved locally.
           </p>
         </div>
       </div>
