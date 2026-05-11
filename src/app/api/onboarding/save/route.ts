@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
     console.log('[API Onboarding Save] Admin client created successfully');
 
     // Convert answers object to array of question-answer pairs
+    // Schema: onboarding_answers (id, user_id, question_key, answer_value, created_at, updated_at)
     const answerRows = Object.entries(answers).map(([questionKey, answerValue]) => ({
       user_id,
       question_key: questionKey,

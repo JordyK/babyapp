@@ -159,6 +159,13 @@ export default function OnboardingPage() {
       console.log('[Onboarding] Attempting to sign up user:', email);
 
       // Sign up user with email and password
+      console.log('[Onboarding] Calling Supabase auth.signUp with:', {
+        email,
+        hasPassword: !!password,
+        fullName,
+        emailRedirectTo: `${window.location.origin}/dashboard`
+      });
+
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
@@ -178,7 +185,11 @@ export default function OnboardingPage() {
         hasUser: !!data?.user,
         hasSession: !!data?.session,
         error: error?.message,
-        userId: data?.user?.id
+        errorDetails: error,
+        userId: data?.user?.id,
+        userEmail: data?.user?.email,
+        userConfirmedAt: data?.user?.confirmed_at,
+        userCreatedAt: data?.user?.created_at
       });
 
       if (error) {
