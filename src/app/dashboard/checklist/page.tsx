@@ -5,6 +5,7 @@ import { generateUserChecklist } from '@/lib/checklist/generate';
 import { ChecklistView } from '@/components/checklist/ChecklistView';
 import { ShareButton } from '@/components/checklist/ShareButton';
 import { InvitePartner } from '@/components/checklist/InvitePartner';
+import { RegenerateButton } from '@/components/checklist/RegenerateButton';
 import { Card } from '@/components/ui';
 import type { UserChecklistItem, GiftClaim } from '@/lib/types/checklist';
 import Link from 'next/link';
@@ -66,6 +67,7 @@ export default async function ChecklistPage() {
             <p className="text-sm text-neutral-400">
               Personalized for your situation. Check off, skip, or add your own items.
             </p>
+            <RegenerateButton />
           </div>
         </div>
 
