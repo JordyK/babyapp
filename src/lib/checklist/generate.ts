@@ -75,8 +75,40 @@ export async function generateUserChecklist(userId: string): Promise<number> {
     matchesConditions(item, profile)
   );
 
+  // Smart sorting based on budget preference
+  const sortedItems = [...matchingItems].sort((a, b) => {
+    // Priority order: essential > recommended > nice_to_have
+    const priorityOrder = { essential: 0, recommended: 1, nice_to_have: 2 };
+    const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder];
+    const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder];
+
+    // If different priorities, sort by priority first
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    // For budget-conscious users, sort budget-tier items first within same priority
+    if (profile.budget_range === 'low') {
+      const tierOrder = { budget: 0, mid: 1, premium: 2 };
+      const aTier = tierOrder[a.price_tier as keyof typeof tierOrder];
+      const bTier = tierOrder[b.price_tier as keyof typeof tierOrder];
+      return aTier - bTier;
+    }
+
+    // For high-budget users, sort premium-tier items first within same priority
+    if (profile.budget_range === 'high') {
+      const tierOrder = { premium: 0, mid: 1, budget: 2 };
+      const aTier = tierOrder[a.price_tier as keyof typeof tierOrder];
+      const bTier = tierOrder[b.price_tier as keyof typeof tierOrder];
+      return aTier - bTier;
+    }
+
+    // Default: keep original sort_order
+    return a.sort_order - b.sort_order;
+  });
+
   // Insert into user_checklist
-  const rows = matchingItems.map((item, index) => ({
+  const rows = sortedItems.map((item, index) => ({
     user_id: userId,
     item_id: item.id,
     name: item.name,
@@ -84,6 +116,9 @@ export async function generateUserChecklist(userId: string): Promise<number> {
     status: 'pending' as const,
     is_custom: false,
     sort_order: index,
+    price_tier: item.price_tier,
+    good_second_hand: item.good_second_hand,
+    priority: item.priority,
   }));
 
   if (rows.length === 0) {

@@ -31,7 +31,7 @@ export default async function ChecklistPage() {
   // Fetch gift claims for this user's items
   const { data: profile } = await supabase
     .from('profiles')
-    .select('share_token')
+    .select('share_token, second_hand_friendly')
     .eq('id', user.id)
     .single();
 
@@ -46,6 +46,7 @@ export default async function ChecklistPage() {
 
   const checklistItems = items ?? [];
   const claimedMap = new Map(giftClaims.map((c) => [c.item_id, c.claimer_name]));
+  const secondHandFriendly = profile?.second_hand_friendly ?? false;
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -82,7 +83,7 @@ export default async function ChecklistPage() {
           </div>
         </Card>
 
-        <ChecklistView items={checklistItems} claimedMap={Object.fromEntries(claimedMap)} />
+        <ChecklistView items={checklistItems} claimedMap={Object.fromEntries(claimedMap)} secondHandFriendly={secondHandFriendly} />
       </div>
     </div>
   );

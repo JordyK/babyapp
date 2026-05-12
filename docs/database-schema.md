@@ -147,6 +147,8 @@ Master catalog of curated baby items with personalization conditions.
 | sort_order | int | NO | Ordering within category |
 | explainer | text | YES | 2-3 sentence explanation of why this item is needed |
 | tips | text | YES | Buying tips and what to look for |
+| good_second_hand | boolean | NO | TRUE if safe/good to buy second-hand (crib, stroller, clothes) |
+| price_tier | text | NO | budget, mid, premium — for budget-aware sorting |
 | created_at | timestamptz | NO | Record creation |
 
 **RLS**: Read-only for all authenticated users.
@@ -167,6 +169,9 @@ Per-user checklist state — tracks status of each item for a specific user.
 | status | text | NO | pending, done, skipped |
 | is_custom | boolean | NO | true if user-added |
 | sort_order | int | NO | Ordering |
+| price_tier | text | NO | budget, mid, premium — denormalized from checklist_items |
+| good_second_hand | boolean | NO | Denormalized from checklist_items for easy access |
+| priority | text | NO | essential, recommended, nice_to_have — denormalized for progress tracking |
 | created_at | timestamptz | NO | Record creation |
 | updated_at | timestamptz | NO | Last update |
 

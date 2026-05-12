@@ -14,9 +14,10 @@ type FilterMode = 'all' | 'remaining' | 'completed';
 interface ChecklistViewProps {
   readonly items: UserChecklistItem[];
   readonly claimedMap?: Record<string, string>;
+  readonly secondHandFriendly?: boolean;
 }
 
-export function ChecklistView({ items, claimedMap = {} }: ChecklistViewProps) {
+export function ChecklistView({ items, claimedMap = {}, secondHandFriendly = false }: ChecklistViewProps) {
   const [filter, setFilter] = useState<FilterMode>('remaining');
 
   // Stats
@@ -109,6 +110,7 @@ export function ChecklistView({ items, claimedMap = {} }: ChecklistViewProps) {
               items={catItems}
               allCategoryItems={items.filter((i) => i.category === category)}
               claimedMap={claimedMap}
+              secondHandFriendly={secondHandFriendly}
             />
           ))}
         </div>
@@ -125,22 +127,35 @@ interface CategoryGroupProps {
   readonly items: UserChecklistItem[];
   readonly allCategoryItems: UserChecklistItem[];
   readonly claimedMap: Record<string, string>;
+  readonly secondHandFriendly: boolean;
 }
 
-function CategoryGroup({ category, items, allCategoryItems, claimedMap }: CategoryGroupProps) {
+function CategoryGroup({ category, items, allCategoryItems, claimedMap, secondHandFriendly }: CategoryGroupProps) {
   const doneCount = allCategoryItems.filter((i) => i.status === 'done').length;
   const totalCount = allCategoryItems.length;
+
+  // Essentials progress
+  const essentialItems = allCategoryItems.filter((i) => i.priority === 'essential');
+  const essentialDone = essentialItems.filter((i) => i.status === 'done').length;
+  const essentialTotal = essentialItems.length;
 
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-base">{CATEGORY_ICONS[category]}</span>
         <h2 className="text-sm font-semibold text-neutral-700">{CATEGORY_LABELS[category]}</h2>
-        <span className="text-xs text-neutral-400 ml-auto">{doneCount}/{totalCount}</span>
+        <span className="text-xs text-neutral-400 ml-auto">
+          {essentialTotal > 0 ? `${essentialDone}/${essentialTotal} essentials` : `${doneCount}/${totalCount}`}
+        </span>
       </div>
       <div className="space-y-1.5">
         {items.map((item) => (
-          <ChecklistItemRow key={item.id} item={item} claimedBy={claimedMap[item.id] ?? null} />
+          <ChecklistItemRow 
+            key={item.id} 
+            item={item} 
+            claimedBy={claimedMap[item.id] ?? null}
+            secondHandFriendly={secondHandFriendly}
+          />
         ))}
       </div>
     </div>
@@ -150,9 +165,10 @@ function CategoryGroup({ category, items, allCategoryItems, claimedMap }: Catego
 interface ChecklistItemRowProps {
   readonly item: UserChecklistItem;
   readonly claimedBy: string | null;
+  readonly secondHandFriendly: boolean;
 }
 
-function ChecklistItemRow({ item, claimedBy }: ChecklistItemRowProps) {
+function ChecklistItemRow({ item, claimedBy, secondHandFriendly }: ChecklistItemRowProps) {
   const router = useRouter();
   const [status, setStatus] = useState<ChecklistStatus>(item.status);
   const [saving, setSaving] = useState(false);
@@ -239,6 +255,13 @@ function ChecklistItemRow({ item, claimedBy }: ChecklistItemRowProps) {
       {claimedBy && (
         <span className="text-[10px] font-medium text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full flex-shrink-0">
           🎁 {claimedBy}
+        </span>
+      )}
+
+      {/* Second-hand indicator */}
+      {secondHandFriendly && item.good_second_hand && !item.is_custom && (
+        <span className="text-[10px] flex-shrink-0" title="Great to buy second-hand">
+          ♻️
         </span>
       )}
 

@@ -22,6 +22,8 @@ export interface ChecklistItem {
   sort_order: number;
   explainer: string;
   tips: string;
+  good_second_hand: boolean;
+  price_tier: 'budget' | 'mid' | 'premium';
 }
 
 export interface GiftClaim {
@@ -54,6 +56,9 @@ export interface UserChecklistItem {
   sort_order: number;
   created_at: string;
   updated_at: string;
+  price_tier: 'budget' | 'mid' | 'premium';
+  good_second_hand: boolean;
+  priority: ChecklistPriority;
 }
 
 export const CATEGORY_LABELS: Record<ChecklistCategory, string> = {
